@@ -57,3 +57,9 @@ The dataset used comes from the official [BPS East Java website](https://jatim.b
 - X<sub>38</sub>  : Citizens have completed certificate degree(D1/D2)/associate degree(D3) (%)
 - X<sub>39</sub>  : Citizens have completed Bachelor Degree(D4/S1)/Master Degree(S2) (%)
 - X<sub>40</sub>  : Regional Gross Domestic Product (%)
+
+## Data Preprocessing
+Scraping data from BPS website and merge it into 1 dataset using RStudio environment.
+
+
+
