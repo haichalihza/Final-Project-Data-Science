@@ -1,0 +1,3476 @@
+---
+title: "Prog_PA_Eval"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+date: "2024-09-13"
+---
+
+```{r}
+#install.packages('tidyverse')
+library(utils)
+library(ppclust)
+library(factoextra)
+library(dplyr)
+library(cluster)
+library(fclust)
+library(psych)
+library(clusterSim)
+library(tidyverse)
+library(readxl)
+library(clValid)
+library(writexl)
+#library(fpc)
+#library(dbscan)
+```
+
+```{r}
+df <- read.csv('D:/bckup hdd lama/Kuliah/PA/DataSDGsJatim2_PCA.csv', sep = ',')
+#dfnew <- subset(df, select = -c(NAMA))
+#sapply(df, class)
+df
+```
+
+```{r}
+dfraw <- read.csv('D:/bckup hdd lama/Kuliah/PA/DataSDGsJatim2.csv', sep = ';')
+#dfnew <- subset(df, select = -c(NAMA))
+#sapply(df, class)
+dfraw
+```
+
+```{r}
+dfraw2 = dfraw
+dfraw2$Kabupaten.Kota = NULL
+
+```
+
+```{r}
+dfrawfinal <- read_excel('D:/bckup hdd lama/Kuliah/PA/Data_TA_final.xlsx', sheet = 'Sheet2')
+dfrawfinal <- dfrawfinal[, -c(0:50)]
+#sapply(df, class)
+dfrawfinal
+dfrawfinalnum = subset(dfrawfinal, select=-c(`Kabupaten/Kota`))
+dfrawfinalnum = na.omit(dfrawfinalnum)
+dfrawfinalnum
+```
+
+```{r}
+#centroid8 = data.frame(fcm_resultno8$v)
+#write_xlsx(centroid8, "D:/bckup hdd lama/Kuliah/PA/clustercentroid8.xlsx")
+#write_xlsx(dfrawfinalnum, "D:/bckup hdd lama/Kuliah/PA/datapcafinalloadingnum.xlsx")
+```
+
+
+```{r}
+x <- subset(df, select = -1)
+x
+#summary(df)
+```
+
+```{r}
+sum(is.na(df))
+#x=na.omit(x)
+#sum(is.na(x))
+
+```
+```{r}
+fviz_nbclust(df, fpcm, method='silhouette')
+```
+```{r}
+#calculate principal components
+pca_result <- prcomp(dfraw2, scale = TRUE)
+
+#reverse the signs
+#pca_result$rotation
+
+summary(pca_result)
+```
+
+```{r}
+# data_scaled = scale(dfraw2)
+summary(pca_result)
+#dfraw2[,1]
+#loading[,1]
+```
+
+```{r}
+#loading <- pca_result$rotation
+
+# Kombinasi linear berdasarkan komponen loading
+#PC1 <- dfraw2[,1] * loading[,1]
+#PC2 <- dfraw2[,2] * loading[,2]
+#PC3 <- dfraw2[,3] * loading[,3]
+#PC4 <- dfraw2[,4] * loading[,4]
+
+ 
+# Menampilkan hasil
+#cat("PC1:\n")
+#print(PC1)
+#cat("PC2:\n")
+#print(PC2)
+#cat("PC3:\n")
+#print(PC3)
+#cat("PC4:\n")
+#print(PC4)
+```
+
+```{r}
+
+# Create a data frame by combining all principal components
+#data_pca <- data.frame(
+#  PC1 = PC1,
+#  PC2 = PC2,
+#  PC3 = PC3,
+#  PC4 = PC4
+#)
+
+# Display the resulting data frame
+#data_pca
+#library(writexl)
+#write_xlsx(data_pca, "D:/bckup hdd lama/Kuliah/PA/data_pca.xlsx")
+```
+
+
+```{r}
+###########################################################################################################
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                  CLUSTER 2                                              #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+###########################################################################################################
+```
+
+```{r}
+# Before PCA
+```
+
+```{r}
+fcm_resultno2 <- fcm(dfraw2, centers = 2)
+pcm_resultno2 <- pcm(dfraw2, centers = 2)
+```
+
+```{r}
+cluster_assignments_pcmno2 <- pcm_resultno2$cluster
+cluster_assignments_fcmno2 <- fcm_resultno2$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_pcmno2 <- pcm_resultno2$t
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fcmno2 <- fcm_resultno2$u
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno2 <- cbind(dfraw2, 
+                   Cluster_FCM = cluster_assignments_fcmno2,
+                   Cluster_PCM = cluster_assignments_pcmno2,
+                   Membership_FCM = apply(membership_degrees_fcmno2, 1, max),
+                   Membership_PCM = apply(membership_degrees_pcmno2, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno2
+
+```
+
+
+```{r}
+
+# Initialize the prototype matrix using K-means++
+v_fpcmno2 <- inaparc::kmpp(dfraw2, k=2)$v
+
+# Initialize the memberships degrees matrix 
+u_fpcmno2 <- inaparc::imembrand(nrow(dfraw2), k=2)$u
+
+# Run FPCM with the initial prototypes and memberships
+fpcm.resno2 <- fpcm(dfraw2, centers=v_fpcmno2, memberships=u_fpcmno2, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(fpcm.resno2$u, 2)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(fpcm.resno2$t, 2)
+```
+
+```{r}
+cluster_assignments_fpcmno2 <- fpcm.resno2$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fpcmno2 <- fpcm.resno2$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno2 <- cbind(result_df_clusterno2, 
+                   Cluster_FPCM = cluster_assignments_fpcmno2,
+                   Membership_FPCM = apply(membership_degrees_fpcmno2, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno2
+```
+
+```{r}
+# Initialize the prototype matrix using K-means++
+v_mfpcmno2 <- inaparc::kmpp(dfraw2, k=2)$v
+
+# Initialize the memberships degrees matrix 
+u_mfpcmno2 <- inaparc::imembrand(nrow(dfraw2), k=2)$u
+
+# Run FPCM with the initial prototypes and memberships
+mfpcm.resno2 <- mfpcm(dfraw2, centers=v_mfpcmno2, memberships=u_mfpcmno2, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(mfpcm.resno2$u, 2)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(mfpcm.resno2$t, 2)
+```
+
+```{r}
+cluster_assignments_mfpcmno2 <- mfpcm.resno2$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_mfpcmno2 <- mfpcm.resno2$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno2 <- cbind(result_df_clusterno2, 
+                   Cluster_MFPCM = cluster_assignments_mfpcmno2,
+                   Membership_MFPCM = apply(membership_degrees_mfpcmno2, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno2
+```
+
+```{r}
+# Count the number of observations in each cluster
+barfcmno2 <- as.factor(fcm_resultno2$cluster)
+cluster_counts <- as.data.frame(table(barfcmno2))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FCM Clustering with 2 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ppcl_fcm_clusterno2 = ppclust2(fcm_resultno2,"fclust")
+idxsf_fcm_clusterno2 = SIL.F(ppcl_fcm_clusterno2$Xca, ppcl_fcm_clusterno2$U, alpha = 1)
+idxsf_fcm_clusterno2
+```
+```{r}
+ppcl_pcm_clusterno2 = ppclust2(pcm_resultno2,"fclust")
+idxsf_pcm_clusterno2 = SIL.F(ppcl_pcm_clusterno2$Xca, ppcl_pcm_clusterno2$U, alpha = 1)
+idxsf_pcm_clusterno2
+```
+```{r}
+ppcl_fpcm_clusterno2 = ppclust2(fpcm.resno2,"fclust")
+idxsf_fpcm_clusterno2 = SIL.F(ppcl_fpcm_clusterno2$Xca, ppcl_fpcm_clusterno2$U, alpha = 1)
+idxsf_fpcm_clusterno2
+```
+```{r}
+ppcl_mfpcm_clusterno2 = ppclust2(mfpcm.resno2,"fclust")
+idxsf_mfpcm_clusterno2 = SIL.F(ppcl_mfpcm_clusterno2$Xca, ppcl_mfpcm_clusterno2$U, alpha = 1)
+idxsf_mfpcm_clusterno2
+```
+```{r}
+#d<-dist(x)
+fcm_clustersno2 <- apply(fcm_resultno2$u, 1, which.max)  # Get the cluster with the highest membership
+d_fcmno2 <- dist(dfraw2)
+db_fcmno2 <- index.DB(dfraw2, fcm_clustersno2, d_fcmno2, centrotypes="centroids")
+db_fcmno2
+```
+```{r}
+pcm_clustersno2 <- apply(pcm_resultno2$t, 1, which.max)  # Get the cluster with the highest membership
+d_pcmno2 <- dist(dfraw2)
+db_pcmno2 <- index.DB(dfraw2, pcm_clustersno2, d_pcmno2, centrotypes="centroids")
+db_pcmno2
+```
+
+```{r}
+fpcm_clustersno2 <- apply(fpcm.resno2$u, 1, which.max)  # Get the cluster with the highest membership
+d_fpcmno2 <- dist(dfraw2)
+db_fpcmno2 <- index.DB(dfraw2, fpcm_clustersno2, d_fpcmno2, centrotypes="centroids")
+db_fpcmno2
+```
+
+```{r}
+mfpcm_clustersno2 <- apply(mfpcm.resno2$u, 1, which.max)  # Get the cluster with the highest membership
+d_mfpcmno2 <- dist(dfraw2)
+db_mfpcmno2 <- index.DB(dfraw2, mfpcm_clustersno2, d_mfpcmno2, centrotypes="centroids")
+db_mfpcmno2
+```
+
+
+```{r}
+summary(fcm_resultno2)
+```
+
+```{r}
+summary(pcm_resultno2)
+```
+
+```{r}
+summary(fpcm.resno2)
+```
+
+```{r}
+summary(mfpcm.resno2)
+```
+
+```{r}
+# After PCA
+```
+
+
+```{r}
+fcm_result2 <- fcm(dfrawfinalnum, centers = 2)
+pcm_result2 <- pcm(dfrawfinalnum, centers = 2)
+```
+
+```{r}
+cluster_assignments_pcm2 <- pcm_result2$cluster
+cluster_assignments_fcm2 <- fcm_result2$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_pcm2 <- pcm_result2$t
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fcm2 <- fcm_result2$u
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster2 <- cbind(dfrawfinalnum, 
+                   Cluster_FCM = cluster_assignments_fcm2,
+                   Cluster_PCM = cluster_assignments_pcm2,
+                   Membership_FCM = apply(membership_degrees_fcm2, 1, max),
+                   Membership_PCM = apply(membership_degrees_pcm2, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster2
+
+```
+
+
+```{r}
+
+# Initialize the prototype matrix using K-means++
+v_fpcm2 <- inaparc::kmpp(dfrawfinalnum, k=2)$v
+
+# Initialize the memberships degrees matrix 
+u_fpcm2 <- inaparc::imembrand(nrow(dfrawfinalnum), k=2)$u
+
+# Run FPCM with the initial prototypes and memberships
+fpcm.res2 <- fpcm(dfrawfinalnum, centers=v_fpcm2, memberships=u_fpcm2, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(fpcm.res2$u, 2)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(fpcm.res2$t, 2)
+```
+
+```{r}
+cluster_assignments_fpcm2 <- fpcm.res2$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fpcm2 <- fpcm.res2$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster2 <- cbind(result_df_cluster2, 
+                   Cluster_FPCM = cluster_assignments_fpcm2,
+                   Membership_FPCM = apply(membership_degrees_fpcm2, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster2
+```
+
+```{r}
+# Initialize the prototype matrix using K-means++
+v_mfpcm2 <- inaparc::kmpp(dfrawfinalnum, k=2)$v
+
+# Initialize the memberships degrees matrix 
+u_mfpcm2 <- inaparc::imembrand(nrow(dfrawfinalnum), k=2)$u
+
+# Run FPCM with the initial prototypes and memberships
+mfpcm.res2 <- mfpcm(dfrawfinalnum, centers=v_mfpcm2, memberships=u_mfpcm2, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(mfpcm.res2$u, 2)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(mfpcm.res2$t, 2)
+```
+
+```{r}
+cluster_assignments_mfpcm2 <- mfpcm.res2$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_mfpcm2 <- mfpcm.res2$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster2 <- cbind(result_df_cluster2, 
+                   Cluster_MFPCM = cluster_assignments_mfpcm2,
+                   Membership_MFPCM = apply(membership_degrees_mfpcm2, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster2
+```
+
+```{r}
+# Count the number of observations in each cluster
+barfcm2 <- as.factor(fcm_result2$cluster)
+cluster_counts <- as.data.frame(table(barfcm2))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FCM Clustering with 2 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ppcl_fcm_cluster2 = ppclust2(fcm_result2,"fclust")
+idxsf_fcm_cluster2 = SIL.F(ppcl_fcm_cluster2$Xca, ppcl_fcm_cluster2$U, alpha = 1)
+idxsf_fcm_cluster2
+```
+```{r}
+ppcl_pcm_cluster2 = ppclust2(pcm_result2,"fclust")
+idxsf_pcm_cluster2 = SIL.F(ppcl_pcm_cluster2$Xca, ppcl_pcm_cluster2$U, alpha = 1)
+idxsf_pcm_cluster2
+```
+```{r}
+ppcl_fpcm_cluster2 = ppclust2(fpcm.res2,"fclust")
+idxsf_fpcm_cluster2 = SIL.F(ppcl_fpcm_cluster2$Xca, ppcl_fpcm_cluster2$U, alpha = 1)
+idxsf_fpcm_cluster2
+```
+```{r}
+ppcl_mfpcm_cluster2 = ppclust2(mfpcm.res2,"fclust")
+idxsf_mfpcm_cluster2 = SIL.F(ppcl_mfpcm_cluster2$Xca, ppcl_mfpcm_cluster2$U, alpha = 1)
+idxsf_mfpcm_cluster2
+```
+```{r}
+#d<-dist(x)
+fcm_clusters2 <- apply(fcm_result2$u, 1, which.max)  # Get the cluster with the highest membership
+d_fcm2 <- dist(dfrawfinalnum)
+db_fcm2 <- index.DB(dfrawfinalnum, fcm_clusters2, d_fcm2, centrotypes="centroids")
+db_fcm2
+```
+```{r}
+pcm_clusters2 <- apply(pcm_result2$t, 1, which.max)  # Get the cluster with the highest membership
+d_pcm2 <- dist(dfrawfinalnum)
+db_pcm2 <- index.DB(dfrawfinalnum, pcm_clusters2, d_pcm2, centrotypes="centroids")
+db_pcm2
+```
+
+```{r}
+fpcm_clusters2 <- apply(fpcm.res2$u, 1, which.max)  # Get the cluster with the highest membership
+d_fpcm2 <- dist(dfrawfinalnum)
+db_fpcm2 <- index.DB(dfrawfinalnum, fpcm_clusters2, d_fpcm2, centrotypes="centroids")
+db_fpcm2
+```
+
+```{r}
+mfpcm_clusters2 <- apply(mfpcm.res2$u, 1, which.max)  # Get the cluster with the highest membership
+d_mfpcm2 <- dist(dfrawfinalnum)
+db_mfpcm2 <- index.DB(dfrawfinalnum, mfpcm_clusters2, d_mfpcm2, centrotypes="centroids")
+db_mfpcm2
+```
+
+
+```{r}
+summary(fcm_result2)
+```
+
+```{r}
+summary(pcm_result2)
+```
+
+```{r}
+summary(fpcm.res2)
+```
+
+```{r}
+summary(mfpcm.res2)
+```
+
+```{r}
+plotcluster(fcm_result2, cp=2)
+fcm_result2_viz=ppclust2(fcm_result2,"kmeans")
+fviz_cluster(fcm_result2_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(pcm_result2, cp=2)
+pcm_result2_viz=ppclust2(pcm_result2,"kmeans")
+fviz_cluster(pcm_result2_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(fpcm.res2, cp=2)
+fpcm_result2_viz=ppclust2(fpcm.res2,"kmeans")
+fviz_cluster(fpcm_result2_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(mfpcm.res2, cp=2)
+mfpcm_result2_viz=ppclust2(mfpcm.res2,"kmeans")
+fviz_cluster(mfpcm_result2_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+###########################################################################################################
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                  CLUSTER 3                                              #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+###########################################################################################################
+```
+
+
+```{r}
+# Before PCA
+```
+
+```{r}
+fcm_resultno3 <- fcm(dfraw2, centers = 3)
+pcm_resultno3 <- pcm(dfraw2, centers = 3)
+```
+
+```{r}
+cluster_assignments_pcmno3 <- pcm_resultno3$cluster
+cluster_assignments_fcmno3 <- fcm_resultno3$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_pcmno3 <- pcm_resultno3$t
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fcmno3 <- fcm_resultno3$u
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno3 <- cbind(dfraw2, 
+                   Cluster_FCM = cluster_assignments_fcmno3,
+                   Cluster_PCM = cluster_assignments_pcmno3,
+                   Membership_FCM = apply(membership_degrees_fcmno3, 1, max),
+                   Membership_PCM = apply(membership_degrees_pcmno3, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno3
+
+```
+
+
+```{r}
+
+# Initialize the prototype matrix using K-means++
+v_fpcmno3 <- inaparc::kmpp(dfraw2, k=3)$v
+
+# Initialize the memberships degrees matrix 
+u_fpcmno3 <- inaparc::imembrand(nrow(dfraw2), k=3)$u
+
+# Run FPCM with the initial prototypes and memberships
+fpcm.resno3 <- fpcm(dfraw2, centers=v_fpcmno3, memberships=u_fpcmno3, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(fpcm.resno3$u, 3)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(fpcm.resno3$t, 3)
+```
+
+```{r}
+cluster_assignments_fpcmno3 <- fpcm.resno3$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fpcmno3 <- fpcm.resno3$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno3 <- cbind(result_df_clusterno3, 
+                   Cluster_FPCM = cluster_assignments_fpcmno3,
+                   Membership_FPCM = apply(membership_degrees_fpcmno3, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno3
+```
+
+```{r}
+# Initialize the prototype matrix using K-means++
+v_mfpcmno3 <- inaparc::kmpp(dfraw2, k=3)$v
+
+# Initialize the memberships degrees matrix 
+u_mfpcmno3 <- inaparc::imembrand(nrow(dfraw2), k=3)$u
+
+# Run FPCM with the initial prototypes and memberships
+mfpcm.resno3 <- mfpcm(dfraw2, centers=v_mfpcmno3, memberships=u_mfpcmno3, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(mfpcm.resno3$u, 3)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(mfpcm.resno3$t, 3)
+```
+
+```{r}
+cluster_assignments_mfpcmno3 <- mfpcm.resno3$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_mfpcmno3 <- mfpcm.resno3$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno3 <- cbind(result_df_clusterno3, 
+                   Cluster_MFPCM = cluster_assignments_mfpcmno3,
+                   Membership_MFPCM = apply(membership_degrees_mfpcmno3, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno3
+```
+
+```{r}
+# Count the number of observations in each cluster
+barfcmno3 <- as.factor(fcm_resultno3$cluster)
+cluster_counts <- as.data.frame(table(barfcmno3))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FCM Clustering with 2 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ppcl_fcm_clusterno3 = ppclust2(fcm_resultno3,"fclust")
+idxsf_fcm_clusterno3 = SIL.F(ppcl_fcm_clusterno3$Xca, ppcl_fcm_clusterno3$U, alpha = 1)
+idxsf_fcm_clusterno3
+```
+```{r}
+ppcl_pcm_clusterno3 = ppclust2(pcm_resultno3,"fclust")
+idxsf_pcm_clusterno3 = SIL.F(ppcl_pcm_clusterno3$Xca, ppcl_pcm_clusterno3$U, alpha = 1)
+idxsf_pcm_clusterno3
+```
+```{r}
+ppcl_fpcm_clusterno3 = ppclust2(fpcm.resno3,"fclust")
+idxsf_fpcm_clusterno3 = SIL.F(ppcl_fpcm_clusterno3$Xca, ppcl_fpcm_clusterno3$U, alpha = 1)
+idxsf_fpcm_clusterno3
+```
+```{r}
+ppcl_mfpcm_clusterno3 = ppclust2(mfpcm.resno3,"fclust")
+idxsf_mfpcm_clusterno3 = SIL.F(ppcl_mfpcm_clusterno3$Xca, ppcl_mfpcm_clusterno3$U, alpha = 1)
+idxsf_mfpcm_clusterno3
+```
+```{r}
+#d<-dist(x)
+fcm_clustersno3 <- apply(fcm_resultno3$u, 1, which.max)  # Get the cluster with the highest membership
+d_fcmno3 <- dist(dfraw2)
+db_fcmno3 <- index.DB(dfraw2, fcm_clustersno3, d_fcmno3, centrotypes="centroids")
+db_fcmno3
+```
+```{r}
+pcm_clustersno3 <- apply(pcm_resultno3$t, 1, which.max)  # Get the cluster with the highest membership
+d_pcmno3 <- dist(dfraw2)
+db_pcmno3 <- index.DB(dfraw2, pcm_clustersno3, d_pcmno3, centrotypes="centroids")
+db_pcmno3
+```
+
+```{r}
+fpcm_clustersno3 <- apply(fpcm.resno3$u, 1, which.max)  # Get the cluster with the highest membership
+d_fpcmno3 <- dist(dfraw2)
+db_fpcmno3 <- index.DB(dfraw2, fpcm_clustersno3, d_fpcmno3, centrotypes="centroids")
+db_fpcmno3
+```
+
+```{r}
+mfpcm_clustersno3 <- apply(mfpcm.resno3$u, 1, which.max)  # Get the cluster with the highest membership
+d_mfpcmno3 <- dist(dfraw2)
+db_mfpcmno3 <- index.DB(dfraw2, mfpcm_clustersno3, d_mfpcmno3, centrotypes="centroids")
+db_mfpcmno3
+```
+
+
+```{r}
+summary(fcm_resultno3)
+```
+
+```{r}
+summary(pcm_resultno3)
+```
+
+```{r}
+summary(fpcm.resno3)
+```
+
+```{r}
+summary(mfpcm.resno3)
+```
+
+```{r}
+# After PCA 
+```
+
+```{r}
+fcm_result3 <- fcm(dfrawfinalnum, centers = 3)
+pcm_result3 <- pcm(dfrawfinalnum, centers = 3)
+```
+
+```{r}
+cluster_assignments_pcm3 <- pcm_result3$cluster
+cluster_assignments_fcm3 <- fcm_result3$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_pcm3 <- pcm_result3$t
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fcm3 <- fcm_result3$u
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster3 <- cbind(dfrawfinalnum, 
+                   Cluster_FCM = cluster_assignments_fcm3,
+                   Cluster_PCM = cluster_assignments_pcm3,
+                   Membership_FCM = apply(membership_degrees_fcm3, 1, max),
+                   Membership_PCM = apply(membership_degrees_pcm3, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster3
+```
+
+
+```{r}
+
+# Initialize the prototype matrix using K-means++
+v_fpcm3 <- inaparc::kmpp(dfrawfinalnum, k=3)$v
+
+# Initialize the memberships degrees matrix 
+u_fpcm3 <- inaparc::imembrand(nrow(dfrawfinalnum), k=3)$u
+
+# Run FPCM with the initial prototypes and memberships
+fpcm.res3 <- fpcm(dfrawfinalnum, centers=v_fpcm3, memberships=u_fpcm3, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(fpcm.res3$u, 3)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(fpcm.res3$t, 3)
+```
+
+```{r}
+cluster_assignments_fpcm3 <- fpcm.res3$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fpcm3 <- fpcm.res3$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster3 <- cbind(result_df_cluster3, 
+                   Cluster_FPCM = cluster_assignments_fpcm3,
+                   Membership_FPCM = apply(membership_degrees_fpcm3, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster3
+```
+
+```{r}
+# Initialize the prototype matrix using K-means++
+v_mfpcm3 <- inaparc::kmpp(dfrawfinalnum, k=3)$v
+
+# Initialize the memberships degrees matrix 
+u_mfpcm3 <- inaparc::imembrand(nrow(dfrawfinalnum), k=3)$u
+
+# Run FPCM with the initial prototypes and memberships
+mfpcm.res3 <- mfpcm(dfrawfinalnum, centers=v_mfpcm3, memberships=u_mfpcm3, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(mfpcm.res3$u, 3)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(mfpcm.res3$t, 3)
+```
+
+```{r}
+cluster_assignments_mfpcm3 <- mfpcm.res3$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_mfpcm3 <- mfpcm.res3$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster3 <- cbind(result_df_cluster3, 
+                   Cluster_MFPCM = cluster_assignments_mfpcm3,
+                   Membership_MFPCM = apply(membership_degrees_mfpcm3, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster3
+```
+
+
+```{r}
+# Count the number of observations in each cluster
+barfcm3 <- as.factor(fcm_result3$cluster)
+cluster_counts <- as.data.frame(table(barfcm3))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FCM Clustering with 3 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+
+
+```{r}
+ppcl_fcm_cluster3 = ppclust2(fcm_result3,"fclust")
+idxsf_fcm_cluster3 = SIL.F(ppcl_fcm_cluster3$Xca, ppcl_fcm_cluster3$U, alpha = 1)
+idxsf_fcm_cluster3
+```
+```{r}
+ppcl_pcm_cluster3 = ppclust2(pcm_result3,"fclust")
+idxsf_pcm_cluster3 = SIL.F(ppcl_pcm_cluster3$Xca, ppcl_pcm_cluster3$U, alpha = 1)
+idxsf_pcm_cluster3
+```
+```{r}
+ppcl_fpcm_cluster3 = ppclust2(fpcm.res3,"fclust")
+idxsf_fpcm_cluster3 = SIL.F(ppcl_fpcm_cluster3$Xca, ppcl_fpcm_cluster3$U, alpha = 1)
+idxsf_fpcm_cluster3
+```
+```{r}
+ppcl_mfpcm_cluster3 = ppclust2(mfpcm.res3,"fclust")
+idxsf_mfpcm_cluster3 = SIL.F(ppcl_mfpcm_cluster3$Xca, ppcl_mfpcm_cluster3$U, alpha = 1)
+idxsf_mfpcm_cluster3
+```
+```{r}
+#d<-dist(x)
+fcm_clusters3 <- apply(fcm_result3$u, 1, which.max)  # Get the cluster with the highest membership
+d_fcm3 <- dist(dfrawfinalnum)
+db_fcm3 <- index.DB(dfrawfinalnum, fcm_clusters3, d_fcm3, centrotypes="centroids")
+db_fcm3
+```
+
+```{r}
+pcm_clusters3 <- apply(pcm_result3$t, 1, which.max)  # Get the cluster with the highest membership
+d_pcm3 <- dist(dfrawfinalnum)
+db_pcm3 <- index.DB(dfrawfinalnum, pcm_clusters3, d_pcm3, centrotypes="centroids")
+db_pcm3
+```
+
+```{r}
+fpcm_clusters3 <- apply(fpcm.res3$u, 1, which.max)  # Get the cluster with the highest membership
+d_fpcm3 <- dist(dfrawfinalnum)
+db_fpcm3 <- index.DB(dfrawfinalnum, fpcm_clusters3, d_fpcm3, centrotypes="centroids")
+db_fpcm3
+```
+
+```{r}
+mfpcm_clusters3 <- apply(mfpcm.res3$u, 1, which.max)  # Get the cluster with the highest membership
+d_mfpcm3 <- dist(dfrawfinalnum)
+db_mfpcm3 <- index.DB(dfrawfinalnum, mfpcm_clusters3, d_mfpcm3, centrotypes="centroids")
+db_mfpcm3
+```
+
+```{r}
+summary(fcm_result3)
+```
+
+```{r}
+summary(pcm_result3)
+```
+
+```{r}
+summary(fpcm.res3)
+```
+
+```{r}
+summary(mfpcm.res3)
+```
+
+```{r}
+plotcluster(fcm_result3, cp=3)
+fcm_result3_viz=ppclust2(fcm_result3,"kmeans")
+fviz_cluster(fcm_result3_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(pcm_result3, cp=3)
+pcm_result3_viz=ppclust2(pcm_result3,"kmeans")
+fviz_cluster(pcm_result3_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(fpcm.res3, cp=3)
+fpcm_result3_viz=ppclust2(fpcm.res3,"kmeans")
+fviz_cluster(fpcm_result3_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(mfpcm.res3, cp=3)
+mfpcm_result3_viz=ppclust2(mfpcm.res3,"kmeans")
+fviz_cluster(mfpcm_result3_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+###########################################################################################################
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                  CLUSTER 4                                              #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+###########################################################################################################
+```
+
+
+```{r}
+# Before PCA
+```
+
+```{r}
+fcm_resultno4 <- fcm(dfraw2, centers = 4)
+pcm_resultno4 <- pcm(dfraw2, centers = 4)
+```
+
+```{r}
+cluster_assignments_pcmno4 <- pcm_resultno4$cluster
+cluster_assignments_fcmno4 <- fcm_resultno4$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_pcmno4 <- pcm_resultno4$t
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fcmno4 <- fcm_resultno4$u
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno4 <- cbind(dfraw2, 
+                   Cluster_FCM = cluster_assignments_fcmno4,
+                   Cluster_PCM = cluster_assignments_pcmno4,
+                   Membership_FCM = apply(membership_degrees_fcmno4, 1, max),
+                   Membership_PCM = apply(membership_degrees_pcmno4, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno4
+
+```
+
+
+```{r}
+
+# Initialize the prototype matrix using K-means++
+v_fpcmno4 <- inaparc::kmpp(dfraw2, k=4)$v
+
+# Initialize the memberships degrees matrix 
+u_fpcmno4 <- inaparc::imembrand(nrow(dfraw2), k=4)$u
+
+# Run FPCM with the initial prototypes and memberships
+fpcm.resno4 <- fpcm(dfraw2, centers=v_fpcmno4, memberships=u_fpcmno4, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(fpcm.resno4$u, 4)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(fpcm.resno4$t, 4)
+```
+
+```{r}
+cluster_assignments_fpcmno4 <- fpcm.resno4$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fpcmno4 <- fpcm.resno4$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno4 <- cbind(result_df_clusterno4, 
+                   Cluster_FPCM = cluster_assignments_fpcmno4,
+                   Membership_FPCM = apply(membership_degrees_fpcmno4, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno4
+```
+
+```{r}
+# Initialize the prototype matrix using K-means++
+v_mfpcmno4 <- inaparc::kmpp(dfraw2, k=4)$v
+
+# Initialize the memberships degrees matrix 
+u_mfpcmno4 <- inaparc::imembrand(nrow(dfraw2), k=4)$u
+
+# Run FPCM with the initial prototypes and memberships
+mfpcm.resno4 <- mfpcm(dfraw2, centers=v_mfpcmno4, memberships=u_mfpcmno4, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(mfpcm.resno4$u, 4)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(mfpcm.resno4$t, 4)
+```
+
+```{r}
+cluster_assignments_mfpcmno4 <- mfpcm.resno4$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_mfpcmno4 <- mfpcm.resno4$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno4 <- cbind(result_df_clusterno4, 
+                   Cluster_MFPCM = cluster_assignments_mfpcmno4,
+                   Membership_MFPCM = apply(membership_degrees_mfpcmno4, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno4
+```
+
+```{r}
+# Count the number of observations in each cluster
+barfcmno4 <- as.factor(fcm_resultno4$cluster)
+cluster_counts <- as.data.frame(table(barfcmno4))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FCM Clustering with 2 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ppcl_fcm_clusterno4 = ppclust2(fcm_resultno4,"fclust")
+idxsf_fcm_clusterno4 = SIL.F(ppcl_fcm_clusterno4$Xca, ppcl_fcm_clusterno4$U, alpha = 1)
+idxsf_fcm_clusterno4
+```
+```{r}
+ppcl_pcm_clusterno4 = ppclust2(pcm_resultno4,"fclust")
+idxsf_pcm_clusterno4 = SIL.F(ppcl_pcm_clusterno4$Xca, ppcl_pcm_clusterno4$U, alpha = 1)
+idxsf_pcm_clusterno4
+```
+```{r}
+ppcl_fpcm_clusterno4 = ppclust2(fpcm.resno4,"fclust")
+idxsf_fpcm_clusterno4 = SIL.F(ppcl_fpcm_clusterno4$Xca, ppcl_fpcm_clusterno4$U, alpha = 1)
+idxsf_fpcm_clusterno4
+```
+```{r}
+ppcl_mfpcm_clusterno4 = ppclust2(mfpcm.resno4,"fclust")
+idxsf_mfpcm_clusterno4 = SIL.F(ppcl_mfpcm_clusterno4$Xca, ppcl_mfpcm_clusterno4$U, alpha = 1)
+idxsf_mfpcm_clusterno4
+```
+```{r}
+#d<-dist(x)
+fcm_clustersno4 <- apply(fcm_resultno4$u, 1, which.max)  # Get the cluster with the highest membership
+d_fcmno4 <- dist(dfraw2)
+db_fcmno4 <- index.DB(dfraw2, fcm_clustersno4, d_fcmno4, centrotypes="centroids")
+db_fcmno4
+```
+```{r}
+pcm_clustersno4 <- apply(pcm_resultno4$t, 1, which.max)  # Get the cluster with the highest membership
+d_pcmno4 <- dist(dfraw2)
+db_pcmno4 <- index.DB(dfraw2, pcm_clustersno4, d_pcmno4, centrotypes="centroids")
+db_pcmno4
+```
+
+```{r}
+fpcm_clustersno4 <- apply(fpcm.resno4$u, 1, which.max)  # Get the cluster with the highest membership
+d_fpcmno4 <- dist(dfraw2)
+db_fpcmno4 <- index.DB(dfraw2, fpcm_clustersno4, d_fpcmno4, centrotypes="centroids")
+db_fpcmno4
+```
+
+```{r}
+mfpcm_clustersno4 <- apply(mfpcm.resno4$u, 1, which.max)  # Get the cluster with the highest membership
+d_mfpcmno4 <- dist(dfraw2)
+db_mfpcmno4 <- index.DB(dfraw2, mfpcm_clustersno4, d_mfpcmno4, centrotypes="centroids")
+db_mfpcmno4
+```
+
+
+```{r}
+summary(fcm_resultno4)
+```
+
+```{r}
+summary(pcm_resultno4)
+```
+
+```{r}
+summary(fpcm.resno4)
+```
+
+```{r}
+summary(mfpcm.resno4)
+```
+
+```{r}
+# After PCA
+```
+
+```{r}
+fcm_result4 <- fcm(dfrawfinalnum, centers = 4)
+pcm_result4 <- pcm(dfrawfinalnum, centers = 4)
+```
+
+```{r}
+cluster_assignments_pcm4 <- pcm_result4$cluster
+cluster_assignments_fcm4 <- fcm_result4$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_pcm4 <- pcm_result4$t
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fcm4 <- fcm_result4$u
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster4 <- cbind(dfrawfinalnum, 
+                   Cluster_FCM = cluster_assignments_fcm4,
+                   Cluster_PCM = cluster_assignments_pcm4,
+                   Membership_FCM = apply(membership_degrees_fcm4, 1, max),
+                   Membership_PCM = apply(membership_degrees_pcm4, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster4
+```
+
+
+```{r}
+
+# Initialize the prototype matrix using K-means++
+v_fpcm4 <- inaparc::kmpp(dfrawfinalnum, k=4)$v
+
+# Initialize the memberships degrees matrix 
+u_fpcm4 <- inaparc::imembrand(nrow(dfrawfinalnum), k=4)$u
+
+# Run FPCM with the initial prototypes and memberships
+fpcm.res4 <- fpcm(dfrawfinalnum, centers=v_fpcm4, memberships=u_fpcm4, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(fpcm.res4$u, 4)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(fpcm.res4$t, 4)
+```
+
+```{r}
+cluster_assignments_fpcm4 <- fpcm.res4$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fpcm4 <- fpcm.res4$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster4 <- cbind(result_df_cluster4, 
+                   Cluster_FPCM = cluster_assignments_fpcm4,
+                   Membership_FPCM = apply(membership_degrees_fpcm4, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster4
+```
+
+```{r}
+# Initialize the prototype matrix using K-means++
+v_mfpcm4 <- inaparc::kmpp(dfrawfinalnum, k=4)$v
+
+# Initialize the memberships degrees matrix 
+u_mfpcm4 <- inaparc::imembrand(nrow(dfrawfinalnum), k=4)$u
+
+# Run FPCM with the initial prototypes and memberships
+mfpcm.res4 <- mfpcm(dfrawfinalnum, centers=v_mfpcm4, memberships=u_mfpcm4, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(mfpcm.res4$u, 4)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(mfpcm.res4$t, 4)
+```
+
+```{r}
+cluster_assignments_mfpcm4 <- mfpcm.res4$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_mfpcm4 <- mfpcm.res4$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster4 <- cbind(result_df_cluster4, 
+                   Cluster_MFPCM = cluster_assignments_mfpcm4,
+                   Membership_MFPCM = apply(membership_degrees_mfpcm4, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster4
+```
+
+```{r}
+# Count the number of observations in each cluster
+barfcm4 <- as.factor(fcm_result4$cluster)
+cluster_counts <- as.data.frame(table(barfcm4))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FCM Clustering with 4 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ppcl_fcm_cluster4 = ppclust2(fcm_result4,"fclust")
+idxsf_fcm_cluster4 = SIL.F(ppcl_fcm_cluster4$Xca, ppcl_fcm_cluster4$U, alpha = 1)
+idxsf_fcm_cluster4
+```
+```{r}
+ppcl_pcm_cluster4 = ppclust2(pcm_result4,"fclust")
+idxsf_pcm_cluster4 = SIL.F(ppcl_pcm_cluster4$Xca, ppcl_pcm_cluster4$U, alpha = 1)
+idxsf_pcm_cluster4
+```
+```{r}
+ppcl_fpcm_cluster4 = ppclust2(fpcm.res4,"fclust")
+idxsf_fpcm_cluster4 = SIL.F(ppcl_fpcm_cluster4$Xca, ppcl_fpcm_cluster4$U, alpha = 1)
+idxsf_fpcm_cluster4
+```
+```{r}
+ppcl_mfpcm_cluster4 = ppclust2(mfpcm.res4,"fclust")
+idxsf_mfpcm_cluster4 = SIL.F(ppcl_mfpcm_cluster4$Xca, ppcl_mfpcm_cluster4$U, alpha = 1)
+idxsf_mfpcm_cluster4
+```
+
+```{r}
+#d<-dist(x)
+fcm_clusters4 <- apply(fcm_result4$u, 1, which.max)  # Get the cluster with the highest membership
+d_fcm4 <- dist(dfrawfinalnum)
+db_fcm4 <- index.DB(dfrawfinalnum, fcm_clusters4, d_fcm4, centrotypes="centroids")
+db_fcm4
+```
+```{r}
+pcm_clusters4 <- apply(pcm_result4$t, 1, which.max)  # Get the cluster with the highest membership
+d_pcm4 <- dist(dfrawfinalnum)
+db_pcm4 <- index.DB(dfrawfinalnum, pcm_clusters4, d_pcm4, centrotypes="centroids")
+db_pcm4
+```
+
+```{r}
+fpcm_clusters4 <- apply(fpcm.res4$u, 1, which.max)  # Get the cluster with the highest membership
+d_fpcm4 <- dist(dfrawfinalnum)
+db_fpcm4 <- index.DB(dfrawfinalnum, fpcm_clusters4, d_fpcm4, centrotypes="centroids")
+db_fpcm4
+```
+
+```{r}
+mfpcm_clusters4 <- apply(mfpcm.res4$u, 1, which.max)  # Get the cluster with the highest membership
+d_mfpcm4 <- dist(dfrawfinalnum)
+db_mfpcm4 <- index.DB(dfrawfinalnum, mfpcm_clusters4, d_mfpcm4, centrotypes="centroids")
+db_mfpcm4
+```
+
+```{r}
+summary(fcm_result4)
+```
+
+```{r}
+summary(pcm_result4)
+```
+
+```{r}
+summary(fpcm.res4)
+```
+
+```{r}
+summary(mfpcm.res4)
+```
+
+```{r}
+plotcluster(fcm_result4, cp=4)
+fcm_result4_viz=ppclust2(fcm_result4,"kmeans")
+fviz_cluster(fcm_result4_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(pcm_result4, cp=4)
+pcm_result4_viz=ppclust2(pcm_result4,"kmeans")
+fviz_cluster(pcm_result4_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(fpcm.res4, cp=4)
+fpcm_result4_viz=ppclust2(fpcm.res4,"kmeans")
+fviz_cluster(fpcm_result4_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(mfpcm.res4, cp=4)
+mfpcm_result4_viz=ppclust2(mfpcm.res4,"kmeans")
+fviz_cluster(mfpcm_result4_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+###########################################################################################################
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                  CLUSTER 5                                              #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+###########################################################################################################
+```
+
+
+```{r}
+# Before PCA
+```
+
+```{r}
+fcm_resultno5 <- fcm(dfraw2, centers = 5)
+pcm_resultno5 <- pcm(dfraw2, centers = 5)
+```
+
+```{r}
+cluster_assignments_pcmno5 <- pcm_resultno5$cluster
+cluster_assignments_fcmno5 <- fcm_resultno5$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_pcmno5 <- pcm_resultno5$t
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fcmno5 <- fcm_resultno5$u
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno5 <- cbind(dfraw2, 
+                   Cluster_FCM = cluster_assignments_fcmno5,
+                   Cluster_PCM = cluster_assignments_pcmno5,
+                   Membership_FCM = apply(membership_degrees_fcmno5, 1, max),
+                   Membership_PCM = apply(membership_degrees_pcmno5, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno5
+
+```
+
+
+```{r}
+
+# Initialize the prototype matrix using K-means++
+v_fpcmno5 <- inaparc::kmpp(dfraw2, k=5)$v
+
+# Initialize the memberships degrees matrix 
+u_fpcmno5 <- inaparc::imembrand(nrow(dfraw2), k=5)$u
+
+# Run FPCM with the initial prototypes and memberships
+fpcm.resno5 <- fpcm(dfraw2, centers=v_fpcmno5, memberships=u_fpcmno5, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(fpcm.resno5$u, 5)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(fpcm.resno5$t, 5)
+```
+
+```{r}
+cluster_assignments_fpcmno5 <- fpcm.resno5$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fpcmno5 <- fpcm.resno5$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno5 <- cbind(result_df_clusterno5, 
+                   Cluster_FPCM = cluster_assignments_fpcmno5,
+                   Membership_FPCM = apply(membership_degrees_fpcmno5, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno5
+```
+
+```{r}
+# Initialize the prototype matrix using K-means++
+v_mfpcmno5 <- inaparc::kmpp(dfraw2, k=5)$v
+
+# Initialize the memberships degrees matrix 
+u_mfpcmno5 <- inaparc::imembrand(nrow(dfraw2), k=5)$u
+
+# Run FPCM with the initial prototypes and memberships
+mfpcm.resno5 <- mfpcm(dfraw2, centers=v_mfpcmno5, memberships=u_mfpcmno5, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(mfpcm.resno5$u, 2)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(mfpcm.resno5$t, 2)
+```
+
+```{r}
+cluster_assignments_mfpcmno5 <- mfpcm.resno5$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_mfpcmno5 <- mfpcm.resno5$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno5 <- cbind(result_df_clusterno5, 
+                   Cluster_MFPCM = cluster_assignments_mfpcmno5,
+                   Membership_MFPCM = apply(membership_degrees_mfpcmno5, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno5
+```
+
+```{r}
+# Count the number of observations in each cluster
+barfcmno5 <- as.factor(fcm_resultno5$cluster)
+cluster_counts <- as.data.frame(table(barfcmno5))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FCM Clustering with 2 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ppcl_fcm_clusterno5 = ppclust2(fcm_resultno5,"fclust")
+idxsf_fcm_clusterno5 = SIL.F(ppcl_fcm_clusterno5$Xca, ppcl_fcm_clusterno5$U, alpha = 1)
+idxsf_fcm_clusterno5
+```
+```{r}
+ppcl_pcm_clusterno5 = ppclust2(pcm_resultno5,"fclust")
+idxsf_pcm_clusterno5 = SIL.F(ppcl_pcm_clusterno5$Xca, ppcl_pcm_clusterno5$U, alpha = 1)
+idxsf_pcm_clusterno5
+```
+```{r}
+ppcl_fpcm_clusterno5 = ppclust2(fpcm.resno5,"fclust")
+idxsf_fpcm_clusterno5 = SIL.F(ppcl_fpcm_clusterno5$Xca, ppcl_fpcm_clusterno5$U, alpha = 1)
+idxsf_fpcm_clusterno5
+```
+```{r}
+ppcl_mfpcm_clusterno5 = ppclust2(mfpcm.resno5,"fclust")
+idxsf_mfpcm_clusterno5 = SIL.F(ppcl_mfpcm_clusterno5$Xca, ppcl_mfpcm_clusterno5$U, alpha = 1)
+idxsf_mfpcm_clusterno5
+```
+```{r}
+#d<-dist(x)
+fcm_clustersno5 <- apply(fcm_resultno5$u, 1, which.max)  # Get the cluster with the highest membership
+d_fcmno5 <- dist(dfraw2)
+db_fcmno5 <- index.DB(dfraw2, fcm_clustersno5, d_fcmno5, centrotypes="centroids")
+db_fcmno5
+```
+```{r}
+pcm_clustersno5 <- apply(pcm_resultno5$t, 1, which.max)  # Get the cluster with the highest membership
+d_pcmno5 <- dist(dfraw2)
+db_pcmno5 <- index.DB(dfraw2, pcm_clustersno5, d_pcmno5, centrotypes="centroids")
+db_pcmno5
+```
+
+```{r}
+fpcm_clustersno5 <- apply(fpcm.resno5$u, 1, which.max)  # Get the cluster with the highest membership
+d_fpcmno5 <- dist(dfraw2)
+db_fpcmno5 <- index.DB(dfraw2, fpcm_clustersno5, d_fpcmno5, centrotypes="centroids")
+db_fpcmno5
+```
+
+```{r}
+mfpcm_clustersno5 <- apply(mfpcm.resno5$u, 1, which.max)  # Get the cluster with the highest membership
+d_mfpcmno5 <- dist(dfraw2)
+db_mfpcmno5 <- index.DB(dfraw2, mfpcm_clustersno5, d_mfpcmno5, centrotypes="centroids")
+db_mfpcmno5
+```
+
+
+```{r}
+summary(fcm_resultno5)
+```
+
+```{r}
+summary(pcm_resultno5)
+```
+
+```{r}
+summary(fpcm.resno5)
+```
+
+```{r}
+summary(mfpcm.resno5)
+```
+
+```{r}
+# After PCA
+```
+
+```{r}
+fcm_result5 <- fcm(dfrawfinalnum, centers = 5)
+pcm_result5 <- pcm(dfrawfinalnum, centers = 5)
+```
+
+```{r}
+cluster_assignments_pcm5 <- pcm_result5$cluster
+cluster_assignments_fcm5 <- fcm_result5$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_pcm5 <- pcm_result5$t
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fcm5 <- fcm_result5$u
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster5 <- cbind(dfrawfinalnum, 
+                   Cluster_FCM = cluster_assignments_fcm5,
+                   Cluster_PCM = cluster_assignments_pcm5,
+                   Membership_FCM = apply(membership_degrees_fcm5, 1, max),
+                   Membership_PCM = apply(membership_degrees_pcm5, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster5
+```
+
+
+```{r}
+
+# Initialize the prototype matrix using K-means++
+v_fpcm5 <- inaparc::kmpp(dfrawfinalnum, k=5)$v
+
+# Initialize the memberships degrees matrix 
+u_fpcm5 <- inaparc::imembrand(nrow(dfrawfinalnum), k=5)$u
+
+# Run FPCM with the initial prototypes and memberships
+fpcm.res5 <- fpcm(dfrawfinalnum, centers=v_fpcm5, memberships=u_fpcm5, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(fpcm.res5$u, 5)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(fpcm.res5$t, 5)
+```
+
+```{r}
+cluster_assignments_fpcm5 <- fpcm.res5$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fpcm5 <- fpcm.res5$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster5 <- cbind(result_df_cluster5, 
+                   Cluster_FPCM = cluster_assignments_fpcm5,
+                   Membership_FPCM = apply(membership_degrees_fpcm5, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster5
+```
+
+```{r}
+# Initialize the prototype matrix using K-means++
+v_mfpcm5 <- inaparc::kmpp(dfrawfinalnum, k=5)$v
+
+# Initialize the memberships degrees matrix 
+u_mfpcm5 <- inaparc::imembrand(nrow(dfrawfinalnum), k=5)$u
+
+# Run FPCM with the initial prototypes and memberships
+mfpcm.res5 <- mfpcm(dfrawfinalnum, centers=v_mfpcm5, memberships=u_mfpcm5, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(mfpcm.res5$u, 5)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(mfpcm.res5$t, 5)
+```
+
+```{r}
+cluster_assignments_mfpcm5 <- mfpcm.res5$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_mfpcm5 <- mfpcm.res5$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster5 <- cbind(result_df_cluster5, 
+                   Cluster_MFPCM = cluster_assignments_mfpcm5,
+                   Membership_MFPCM = apply(membership_degrees_mfpcm5, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster5
+```
+
+```{r}
+# Count the number of observations in each cluster
+barfcm5 <- as.factor(fcm_result5$cluster)
+cluster_counts <- as.data.frame(table(barfcm5))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FCM Clustering with 5 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ppcl_fcm_cluster5 = ppclust2(fcm_result5,"fclust")
+idxsf_fcm_cluster5 = SIL.F(ppcl_fcm_cluster5$Xca, ppcl_fcm_cluster5$U, alpha = 1)
+idxsf_fcm_cluster5
+```
+```{r}
+ppcl_pcm_cluster5 = ppclust2(pcm_result5,"fclust")
+idxsf_pcm_cluster5 = SIL.F(ppcl_pcm_cluster5$Xca, ppcl_pcm_cluster5$U, alpha = 1)
+idxsf_pcm_cluster5
+```
+```{r}
+ppcl_fpcm_cluster5 = ppclust2(fpcm.res5,"fclust")
+idxsf_fpcm_cluster5 = SIL.F(ppcl_fpcm_cluster5$Xca, ppcl_fpcm_cluster5$U, alpha = 1)
+idxsf_fpcm_cluster5
+```
+```{r}
+ppcl_mfpcm_cluster5 = ppclust2(mfpcm.res5,"fclust")
+idxsf_mfpcm_cluster5 = SIL.F(ppcl_mfpcm_cluster5$Xca, ppcl_mfpcm_cluster5$U, alpha = 1)
+idxsf_mfpcm_cluster5
+```
+```{r}
+#d<-dist(x)
+fcm_clusters5 <- apply(fcm_result5$u, 1, which.max)  # Get the cluster with the highest membership
+d_fcm5 <- dist(dfrawfinalnum)
+db_fcm5 <- index.DB(dfrawfinalnum, fcm_clusters5, d_fcm5, centrotypes="centroids")
+db_fcm5
+```
+```{r}
+pcm_clusters5 <- apply(pcm_result5$t, 1, which.max)  # Get the cluster with the highest membership
+d_pcm5 <- dist(dfrawfinalnum)
+db_pcm5 <- index.DB(dfrawfinalnum, pcm_clusters5, d_pcm5, centrotypes="centroids")
+db_pcm5
+```
+
+```{r}
+fpcm_clusters5 <- apply(fpcm.res5$u, 1, which.max)  # Get the cluster with the highest membership
+d_fpcm5 <- dist(dfrawfinalnum)
+db_fpcm5 <- index.DB(dfrawfinalnum, fpcm_clusters5, d_fpcm5, centrotypes="centroids")
+db_fpcm5
+```
+
+```{r}
+mfpcm_clusters5 <- apply(mfpcm.res5$u, 1, which.max)  # Get the cluster with the highest membership
+d_mfpcm5 <- dist(dfrawfinalnum)
+db_mfpcm5 <- index.DB(dfrawfinalnum, mfpcm_clusters5, d_mfpcm5, centrotypes="centroids")
+db_mfpcm5
+```
+
+```{r}
+summary(fcm_result5)
+```
+
+```{r}
+summary(pcm_result5)
+```
+
+```{r}
+summary(fpcm.res5)
+```
+
+```{r}
+summary(mfpcm.res5)
+```
+
+
+```{r}
+plotcluster(fcm_result5, cp=5)
+fcm_result5_viz=ppclust2(fcm_result5,"kmeans")
+fviz_cluster(fcm_result5_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(pcm_result5, cp=5)
+pcm_result5_viz=ppclust2(pcm_result5,"kmeans")
+fviz_cluster(pcm_result5_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(fpcm.res5, cp=5)
+fpcm_result5_viz=ppclust2(fpcm.res3,"kmeans")
+fviz_cluster(fpcm_result5_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(mfpcm.res5, cp=5)
+mfpcm_result5_viz=ppclust2(mfpcm.res5,"kmeans")
+fviz_cluster(mfpcm_result5_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+```{r}
+###########################################################################################################
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                  CLUSTER 6                                              #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+###########################################################################################################
+```
+
+```{r}
+# Before PCA
+```
+
+```{r}
+fcm_resultno6 <- fcm(dfraw2, centers = 6)
+pcm_resultno6 <- pcm(dfraw2, centers = 6)
+```
+
+```{r}
+cluster_assignments_pcmno6 <- pcm_resultno6$cluster
+cluster_assignments_fcmno6 <- fcm_resultno6$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_pcmno6 <- pcm_resultno6$t
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fcmno6 <- fcm_resultno6$u
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno6 <- cbind(dfraw2, 
+                   Cluster_FCM = cluster_assignments_fcmno6,
+                   Cluster_PCM = cluster_assignments_pcmno6,
+                   Membership_FCM = apply(membership_degrees_fcmno6, 1, max),
+                   Membership_PCM = apply(membership_degrees_pcmno6, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno6
+
+```
+
+
+```{r}
+
+# Initialize the prototype matrix using K-means++
+v_fpcmno6 <- inaparc::kmpp(dfraw2, k=6)$v
+
+# Initialize the memberships degrees matrix 
+u_fpcmno6 <- inaparc::imembrand(nrow(dfraw2), k=6)$u
+
+# Run FPCM with the initial prototypes and memberships
+fpcm.resno6 <- fpcm(dfraw2, centers=v_fpcmno6, memberships=u_fpcmno6, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(fpcm.resno6$u, 6)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(fpcm.resno6$t, 6)
+```
+
+```{r}
+cluster_assignments_fpcmno6 <- fpcm.resno6$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fpcmno6 <- fpcm.resno6$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno6 <- cbind(result_df_clusterno6, 
+                   Cluster_FPCM = cluster_assignments_fpcmno6,
+                   Membership_FPCM = apply(membership_degrees_fpcmno6, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno6
+```
+
+```{r}
+# Initialize the prototype matrix using K-means++
+v_mfpcmno6 <- inaparc::kmpp(dfraw2, k=6)$v
+
+# Initialize the memberships degrees matrix 
+u_mfpcmno6 <- inaparc::imembrand(nrow(dfraw2), k=6)$u
+
+# Run FPCM with the initial prototypes and memberships
+mfpcm.resno6 <- mfpcm(dfraw2, centers=v_mfpcmno6, memberships=u_mfpcmno6, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(mfpcm.resno6$u, 6)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(mfpcm.resno6$t, 6)
+```
+
+```{r}
+cluster_assignments_mfpcmno6 <- mfpcm.resno6$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_mfpcmno6 <- mfpcm.resno6$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno6 <- cbind(result_df_clusterno6, 
+                   Cluster_MFPCM = cluster_assignments_mfpcmno6,
+                   Membership_MFPCM = apply(membership_degrees_mfpcmno6, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno6
+```
+
+```{r}
+# Count the number of observations in each cluster
+barfcmno6 <- as.factor(fcm_resultno6$cluster)
+cluster_counts <- as.data.frame(table(barfcmno6))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FCM Clustering with 2 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ppcl_fcm_clusterno6 = ppclust2(fcm_resultno6,"fclust")
+idxsf_fcm_clusterno6 = SIL.F(ppcl_fcm_clusterno6$Xca, ppcl_fcm_clusterno6$U, alpha = 1)
+idxsf_fcm_clusterno6
+```
+```{r}
+ppcl_pcm_clusterno6 = ppclust2(pcm_resultno6,"fclust")
+idxsf_pcm_clusterno6 = SIL.F(ppcl_pcm_clusterno6$Xca, ppcl_pcm_clusterno6$U, alpha = 1)
+idxsf_pcm_clusterno6
+```
+```{r}
+ppcl_fpcm_clusterno6 = ppclust2(fpcm.resno6,"fclust")
+idxsf_fpcm_clusterno6 = SIL.F(ppcl_fpcm_clusterno6$Xca, ppcl_fpcm_clusterno6$U, alpha = 1)
+idxsf_fpcm_clusterno6
+```
+```{r}
+ppcl_mfpcm_clusterno6 = ppclust2(mfpcm.resno6,"fclust")
+idxsf_mfpcm_clusterno6 = SIL.F(ppcl_mfpcm_clusterno6$Xca, ppcl_mfpcm_clusterno6$U, alpha = 1)
+idxsf_mfpcm_clusterno6
+```
+```{r}
+#d<-dist(x)
+fcm_clustersno6 <- apply(fcm_resultno6$u, 1, which.max)  # Get the cluster with the highest membership
+d_fcmno6 <- dist(dfraw2)
+db_fcmno6 <- index.DB(dfraw2, fcm_clustersno6, d_fcmno6, centrotypes="centroids")
+db_fcmno6
+```
+```{r}
+pcm_clustersno6 <- apply(pcm_resultno6$t, 1, which.max)  # Get the cluster with the highest membership
+d_pcmno6 <- dist(dfraw2)
+db_pcmno6 <- index.DB(dfraw2, pcm_clustersno6, d_pcmno6, centrotypes="centroids")
+db_pcmno6
+```
+
+```{r}
+fpcm_clustersno6 <- apply(fpcm.resno6$u, 1, which.max)  # Get the cluster with the highest membership
+d_fpcmno6 <- dist(dfraw2)
+db_fpcmno6 <- index.DB(dfraw2, fpcm_clustersno6, d_fpcmno6, centrotypes="centroids")
+db_fpcmno6
+```
+
+```{r}
+mfpcm_clustersno6 <- apply(mfpcm.resno6$u, 1, which.max)  # Get the cluster with the highest membership
+d_mfpcmno6 <- dist(dfraw2)
+db_mfpcmno6 <- index.DB(dfraw2, mfpcm_clustersno6, d_mfpcmno6, centrotypes="centroids")
+db_mfpcmno6
+```
+
+
+```{r}
+summary(fcm_resultno6)
+```
+
+```{r}
+summary(pcm_resultno6)
+```
+
+```{r}
+summary(fpcm.resno6)
+```
+
+```{r}
+summary(mfpcm.resno6)
+```
+
+```{r}
+# After PCA
+```
+
+```{r}
+fcm_result6 <- fcm(dfrawfinalnum, centers = 6)
+pcm_result6 <- pcm(dfrawfinalnum, centers = 6)
+```
+
+```{r}
+cluster_assignments_pcm6 <- pcm_result6$cluster
+cluster_assignments_fcm6 <- fcm_result6$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_pcm6 <- pcm_result6$t
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fcm6 <- fcm_result6$u
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster6 <- cbind(dfrawfinalnum, 
+                   Cluster_FCM = cluster_assignments_fcm6,
+                   Cluster_PCM = cluster_assignments_pcm6,
+                   Membership_FCM = apply(membership_degrees_fcm6, 1, max),
+                   Membership_PCM = apply(membership_degrees_pcm6, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster6
+```
+
+
+```{r}
+
+# Initialize the prototype matrix using K-means++
+v_fpcm6 <- inaparc::kmpp(dfrawfinalnum, k=6)$v
+
+# Initialize the memberships degrees matrix 
+u_fpcm6 <- inaparc::imembrand(nrow(dfrawfinalnum), k=6)$u
+
+# Run FPCM with the initial prototypes and memberships
+fpcm.res6 <- fpcm(dfrawfinalnum, centers=v_fpcm6, memberships=u_fpcm6, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(fpcm.res6$u, 6)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(fpcm.res6$t, 6)
+```
+
+```{r}
+cluster_assignments_fpcm6 <- fpcm.res6$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fpcm6 <- fpcm.res6$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster6 <- cbind(result_df_cluster6, 
+                   Cluster_FPCM = cluster_assignments_fpcm6,
+                   Membership_FPCM = apply(membership_degrees_fpcm6, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster6
+```
+
+```{r}
+# Initialize the prototype matrix using K-means++
+v_mfpcm6 <- inaparc::kmpp(dfrawfinalnum, k=6)$v
+
+# Initialize the memberships degrees matrix 
+u_mfpcm6 <- inaparc::imembrand(nrow(dfrawfinalnum), k=6)$u
+
+# Run FPCM with the initial prototypes and memberships
+mfpcm.res6 <- mfpcm(dfrawfinalnum, centers=v_mfpcm6, memberships=u_mfpcm6, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(mfpcm.res6$u, 6)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(mfpcm.res6$t, 6)
+```
+
+```{r}
+cluster_assignments_mfpcm6 <- mfpcm.res6$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_mfpcm6 <- mfpcm.res6$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster6 <- cbind(result_df_cluster6, 
+                   Cluster_MFPCM = cluster_assignments_mfpcm6,
+                   Membership_MFPCM = apply(membership_degrees_mfpcm6, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster6
+```
+
+```{r}
+# Count the number of observations in each cluster
+barfcm6 <- as.factor(fcm_result6$cluster)
+cluster_counts <- as.data.frame(table(barfcm6))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FCM Clustering with 6 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ppcl_fcm_cluster6 = ppclust2(fcm_result6,"fclust")
+idxsf_fcm_cluster6 = SIL.F(ppcl_fcm_cluster6$Xca, ppcl_fcm_cluster6$U, alpha = 1)
+idxsf_fcm_cluster6
+```
+```{r}
+ppcl_pcm_cluster6 = ppclust2(pcm_result6,"fclust")
+idxsf_pcm_cluster6 = SIL.F(ppcl_pcm_cluster6$Xca, ppcl_pcm_cluster6$U, alpha = 1)
+idxsf_pcm_cluster6
+```
+```{r}
+ppcl_fpcm_cluster6 = ppclust2(fpcm.res6,"fclust")
+idxsf_fpcm_cluster6 = SIL.F(ppcl_fpcm_cluster6$Xca, ppcl_fpcm_cluster6$U, alpha = 1)
+idxsf_fpcm_cluster6
+```
+```{r}
+ppcl_mfpcm_cluster6 = ppclust2(mfpcm.res6,"fclust")
+idxsf_mfpcm_cluster6 = SIL.F(ppcl_mfpcm_cluster6$Xca, ppcl_mfpcm_cluster6$U, alpha = 1)
+idxsf_mfpcm_cluster6
+```
+```{r}
+#d<-dist(x)
+fcm_clusters6 <- apply(fcm_result6$u, 1, which.max)  # Get the cluster with the highest membership
+d_fcm6 <- dist(dfrawfinalnum)
+db_fcm6 <- index.DB(dfrawfinalnum, fcm_clusters6, d_fcm6, centrotypes="centroids")
+db_fcm6
+```
+```{r}
+pcm_clusters6 <- apply(pcm_result6$t, 1, which.max)  # Get the cluster with the highest membership
+d_pcm6 <- dist(dfrawfinalnum)
+db_pcm6 <- index.DB(dfrawfinalnum, pcm_clusters6, d_pcm6, centrotypes="centroids")
+db_pcm6
+```
+
+```{r}
+fpcm_clusters6 <- apply(fpcm.res6$u, 1, which.max)  # Get the cluster with the highest membership
+d_fpcm6 <- dist(dfrawfinalnum)
+db_fpcm6 <- index.DB(dfrawfinalnum, fpcm_clusters6, d_fpcm6, centrotypes="centroids")
+db_fpcm6
+```
+
+```{r}
+mfpcm_clusters6 <- apply(mfpcm.res6$u, 1, which.max)  # Get the cluster with the highest membership
+d_mfpcm6 <- dist(dfrawfinalnum)
+db_mfpcm6 <- index.DB(dfrawfinalnum, mfpcm_clusters6, d_mfpcm6, centrotypes="centroids")
+db_mfpcm6
+```
+
+```{r}
+summary(fcm_result6)
+```
+
+```{r}
+summary(pcm_result6)
+```
+
+```{r}
+summary(fpcm.res6)
+```
+
+```{r}
+summary(mfpcm.res6)
+```
+
+
+```{r}
+plotcluster(fcm_result6)
+fcm_result6_viz=ppclust2(fcm_result6,"kmeans")
+fviz_cluster(fcm_result6_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(pcm_result6)
+pcm_result6_viz=ppclust2(pcm_result6,"kmeans")
+fviz_cluster(pcm_result6_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(fpcm.res6)
+fpcm_result6_viz=ppclust2(fpcm.res6,"kmeans")
+fviz_cluster(fpcm_result6_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(mfpcm.res6)
+mfpcm_result6_viz=ppclust2(mfpcm.res6,"kmeans")
+fviz_cluster(mfpcm_result6_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+###########################################################################################################
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                  CLUSTER 7                                              #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+###########################################################################################################
+```
+
+```{r}
+# Before PCA
+```
+
+```{r}
+fcm_resultno7 <- fcm(dfraw2, centers = 7)
+pcm_resultno7 <- pcm(dfraw2, centers = 7)
+```
+
+```{r}
+cluster_assignments_pcmno7 <- pcm_resultno7$cluster
+cluster_assignments_fcmno7 <- fcm_resultno7$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_pcmno7 <- pcm_resultno7$t
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fcmno7 <- fcm_resultno7$u
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno7 <- cbind(dfraw2, 
+                   Cluster_FCM = cluster_assignments_fcmno7,
+                   Cluster_PCM = cluster_assignments_pcmno7,
+                   Membership_FCM = apply(membership_degrees_fcmno7, 1, max),
+                   Membership_PCM = apply(membership_degrees_pcmno7, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno7
+
+```
+
+
+```{r}
+
+# Initialize the prototype matrix using K-means++
+v_fpcmno7 <- inaparc::kmpp(dfraw2, k=7)$v
+
+# Initialize the memberships degrees matrix 
+u_fpcmno7 <- inaparc::imembrand(nrow(dfraw2), k=7)$u
+
+# Run FPCM with the initial prototypes and memberships
+fpcm.resno7 <- fpcm(dfraw2, centers=v_fpcmno7, memberships=u_fpcmno7, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(fpcm.resno7$u, 7)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(fpcm.resno7$t, 7)
+```
+
+```{r}
+cluster_assignments_fpcmno7 <- fpcm.resno7$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fpcmno7 <- fpcm.resno7$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno7 <- cbind(result_df_clusterno7, 
+                   Cluster_FPCM = cluster_assignments_fpcmno7,
+                   Membership_FPCM = apply(membership_degrees_fpcmno7, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno7
+```
+
+```{r}
+# Initialize the prototype matrix using K-means++
+v_mfpcmno7 <- inaparc::kmpp(dfraw2, k=7)$v
+
+# Initialize the memberships degrees matrix 
+u_mfpcmno7 <- inaparc::imembrand(nrow(dfraw2), k=7)$u
+
+# Run FPCM with the initial prototypes and memberships
+mfpcm.resno7 <- mfpcm(dfraw2, centers=v_mfpcmno7, memberships=u_mfpcmno7, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(mfpcm.resno7$u, 7)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(mfpcm.resno7$t, 7)
+```
+
+```{r}
+cluster_assignments_mfpcmno7 <- mfpcm.resno7$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_mfpcmno7 <- mfpcm.resno7$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno7 <- cbind(result_df_clusterno7, 
+                   Cluster_MFPCM = cluster_assignments_mfpcmno7,
+                   Membership_MFPCM = apply(membership_degrees_mfpcmno7, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno7
+```
+
+```{r}
+# Count the number of observations in each cluster
+barfcmno7 <- as.factor(fcm_resultno7$cluster)
+cluster_counts <- as.data.frame(table(barfcmno7))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FCM Clustering with 2 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ppcl_fcm_clusterno7 = ppclust2(fcm_resultno7,"fclust")
+idxsf_fcm_clusterno7 = SIL.F(ppcl_fcm_clusterno7$Xca, ppcl_fcm_clusterno7$U, alpha = 1)
+idxsf_fcm_clusterno7
+```
+```{r}
+ppcl_pcm_clusterno7 = ppclust2(pcm_resultno7,"fclust")
+idxsf_pcm_clusterno7 = SIL.F(ppcl_pcm_clusterno7$Xca, ppcl_pcm_clusterno7$U, alpha = 1)
+idxsf_pcm_clusterno7
+```
+```{r}
+ppcl_fpcm_clusterno7 = ppclust2(fpcm.resno7,"fclust")
+idxsf_fpcm_clusterno7 = SIL.F(ppcl_fpcm_clusterno7$Xca, ppcl_fpcm_clusterno7$U, alpha = 1)
+idxsf_fpcm_clusterno7
+```
+```{r}
+ppcl_mfpcm_clusterno7 = ppclust2(mfpcm.resno7,"fclust")
+idxsf_mfpcm_clusterno7 = SIL.F(ppcl_mfpcm_clusterno7$Xca, ppcl_mfpcm_clusterno7$U, alpha = 1)
+idxsf_mfpcm_clusterno7
+```
+```{r}
+#d<-dist(x)
+fcm_clustersno7 <- apply(fcm_resultno7$u, 1, which.max)  # Get the cluster with the highest membership
+d_fcmno7 <- dist(dfraw2)
+db_fcmno7 <- index.DB(dfraw2, fcm_clustersno7, d_fcmno7, centrotypes="centroids")
+db_fcmno7
+```
+```{r}
+pcm_clustersno7 <- apply(pcm_resultno7$t, 1, which.max)  # Get the cluster with the highest membership
+d_pcmno7 <- dist(dfraw2)
+db_pcmno7 <- index.DB(dfraw2, pcm_clustersno7, d_pcmno7, centrotypes="centroids")
+db_pcmno7
+```
+
+```{r}
+fpcm_clustersno7 <- apply(fpcm.resno7$u, 1, which.max)  # Get the cluster with the highest membership
+d_fpcmno7 <- dist(dfraw2)
+db_fpcmno7 <- index.DB(dfraw2, fpcm_clustersno7, d_fpcmno7, centrotypes="centroids")
+db_fpcmno7
+```
+
+```{r}
+mfpcm_clustersno7 <- apply(mfpcm.resno7$u, 1, which.max)  # Get the cluster with the highest membership
+d_mfpcmno7 <- dist(dfraw2)
+db_mfpcmno7 <- index.DB(dfraw2, mfpcm_clustersno7, d_mfpcmno7, centrotypes="centroids")
+db_mfpcmno7
+```
+
+
+```{r}
+summary(fcm_resultno7)
+```
+
+```{r}
+summary(pcm_resultno7)
+```
+
+```{r}
+summary(fpcm.resno7)
+```
+
+```{r}
+summary(mfpcm.resno7)
+```
+
+```{r}
+# After PCA
+```
+
+```{r}
+fcm_result7 <- fcm(dfrawfinalnum, centers = 7)
+pcm_result7 <- pcm(dfrawfinalnum, centers = 7)
+```
+
+```{r}
+cluster_assignments_pcm7 <- pcm_result7$cluster
+cluster_assignments_fcm7 <- fcm_result7$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_pcm7 <- pcm_result7$t
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fcm7 <- fcm_result7$u
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster7 <- cbind(dfrawfinalnum, 
+                   Cluster_FCM = cluster_assignments_fcm7,
+                   Cluster_PCM = cluster_assignments_pcm7,
+                   Membership_FCM = apply(membership_degrees_fcm7, 1, max),
+                   Membership_PCM = apply(membership_degrees_pcm7, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster7
+
+```
+
+
+```{r}
+
+# Initialize the prototype matrix using K-means++
+v_fpcm7 <- inaparc::kmpp(dfrawfinalnum, k=7)$v
+
+# Initialize the memberships degrees matrix 
+u_fpcm7 <- inaparc::imembrand(nrow(dfrawfinalnum), k=7)$u
+
+# Run FPCM with the initial prototypes and memberships
+fpcm.res7 <- fpcm(dfrawfinalnum, centers=v_fpcm7, memberships=u_fpcm7, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(fpcm.res7$u, 7)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(fpcm.res7$t, 7)
+```
+
+```{r}
+cluster_assignments_fpcm7 <- fpcm.res7$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fpcm7 <- fpcm.res7$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster7 <- cbind(result_df_cluster7, 
+                   Cluster_FPCM = cluster_assignments_fpcm7,
+                   Membership_FPCM = apply(membership_degrees_fpcm7, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster7
+```
+
+```{r}
+# Initialize the prototype matrix using K-means++
+v_mfpcm7 <- inaparc::kmpp(dfrawfinalnum, k=7)$v
+
+# Initialize the memberships degrees matrix 
+u_mfpcm7 <- inaparc::imembrand(nrow(dfrawfinalnum), k=7)$u
+
+# Run FPCM with the initial prototypes and memberships
+mfpcm.res7 <- mfpcm(dfrawfinalnum, centers=v_mfpcm7, memberships=u_mfpcm7, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(mfpcm.res7$u, 7)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(mfpcm.res7$t, 7)
+```
+
+```{r}
+cluster_assignments_mfpcm7 <- mfpcm.res7$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_mfpcm7 <- mfpcm.res7$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster7 <- cbind(result_df_cluster7, 
+                   Cluster_MFPCM = cluster_assignments_mfpcm7,
+                   Membership_MFPCM = apply(membership_degrees_mfpcm7, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster7
+```
+
+```{r}
+# Count the number of observations in each cluster
+barfcm7 <- as.factor(fcm_result7$cluster)
+cluster_counts <- as.data.frame(table(barfcm7))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FCM Clustering with 7 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ppcl_fcm_cluster7 = ppclust2(fcm_result7,"fclust")
+idxsf_fcm_cluster7 = SIL.F(ppcl_fcm_cluster7$Xca, ppcl_fcm_cluster7$U, alpha = 1)
+idxsf_fcm_cluster7
+```
+```{r}
+ppcl_pcm_cluster7 = ppclust2(pcm_result7,"fclust")
+idxsf_pcm_cluster7 = SIL.F(ppcl_pcm_cluster7$Xca, ppcl_pcm_cluster7$U, alpha = 1)
+idxsf_pcm_cluster7
+```
+```{r}
+ppcl_fpcm_cluster7 = ppclust2(fpcm.res7,"fclust")
+idxsf_fpcm_cluster7 = SIL.F(ppcl_fpcm_cluster7$Xca, ppcl_fpcm_cluster7$U, alpha = 1)
+idxsf_fpcm_cluster7
+```
+```{r}
+ppcl_mfpcm_cluster7 = ppclust2(mfpcm.res7,"fclust")
+idxsf_mfpcm_cluster7 = SIL.F(ppcl_mfpcm_cluster7$Xca, ppcl_mfpcm_cluster7$U, alpha = 1)
+idxsf_mfpcm_cluster7
+```
+```{r}
+#d<-dist(x)
+fcm_clusters7 <- apply(fcm_result7$u, 1, which.max)  # Get the cluster with the highest membership
+d_fcm7 <- dist(dfrawfinalnum)
+db_fcm7 <- index.DB(dfrawfinalnum, fcm_clusters7, d_fcm7, centrotypes="centroids")
+db_fcm7
+```
+```{r}
+pcm_clusters7 <- apply(pcm_result7$t, 1, which.max)  # Get the cluster with the highest membership
+d_pcm7 <- dist(dfrawfinalnum)
+db_pcm7 <- index.DB(dfrawfinalnum, pcm_clusters7, d_pcm7, centrotypes="centroids")
+db_pcm7
+```
+
+```{r}
+fpcm_clusters7 <- apply(fpcm.res7$u, 1, which.max)  # Get the cluster with the highest membership
+d_fpcm7 <- dist(dfrawfinalnum)
+db_fpcm7 <- index.DB(dfrawfinalnum, fpcm_clusters7, d_fpcm7, centrotypes="centroids")
+db_fpcm7
+```
+
+```{r}
+mfpcm_clusters7 <- apply(mfpcm.res7$u, 1, which.max)  # Get the cluster with the highest membership
+d_mfpcm7 <- dist(dfrawfinalnum)
+db_mfpcm7 <- index.DB(dfrawfinalnum, mfpcm_clusters7, d_mfpcm7, centrotypes="centroids")
+db_mfpcm7
+```
+
+```{r}
+summary(fcm_result7)
+```
+
+```{r}
+summary(pcm_result7)
+```
+
+```{r}
+summary(fpcm.res7)
+```
+
+```{r}
+summary(mfpcm.res7)
+```
+
+
+```{r}
+plotcluster(fcm_result7)
+fcm_result7_viz=ppclust2(fcm_result7,"kmeans")
+fviz_cluster(fcm_result7_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(pcm_result7)
+pcm_result7_viz=ppclust2(pcm_result7,"kmeans")
+fviz_cluster(pcm_result7_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(fpcm.res7)
+fpcm_result7_viz=ppclust2(fpcm.res7,"kmeans")
+fviz_cluster(fpcm_result7_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(mfpcm.res7)
+mfpcm_result7_viz=ppclust2(mfpcm.res7,"kmeans")
+fviz_cluster(mfpcm_result7_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+###########################################################################################################
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                  CLUSTER 8                                              #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+#                                                                                                         #
+###########################################################################################################
+```
+
+```{r}
+# Before PCA
+```
+
+```{r}
+fcm_resultno8 <- fcm(dfraw2, centers = 8)
+pcm_resultno8 <- pcm(dfraw2, centers = 8)
+```
+
+```{r}
+cluster_assignments_pcmno8 <- pcm_resultno8$cluster
+cluster_assignments_fcmno8 <- fcm_resultno8$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_pcmno8 <- pcm_resultno8$t
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fcmno8 <- fcm_resultno8$u
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno8 <- cbind(dfraw2, 
+                   Cluster_FCM = cluster_assignments_fcmno8,
+                   Cluster_PCM = cluster_assignments_pcmno8,
+                   Membership_FCM = apply(membership_degrees_fcmno8, 1, max),
+                   Membership_PCM = apply(membership_degrees_pcmno8, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno8
+
+```
+
+
+```{r}
+
+# Initialize the prototype matrix using K-means++
+v_fpcmno8 <- inaparc::kmpp(dfraw2, k=8)$v
+
+# Initialize the memberships degrees matrix 
+u_fpcmno8 <- inaparc::imembrand(nrow(dfraw2), k=8)$u
+
+# Run FPCM with the initial prototypes and memberships
+fpcm.resno8 <- fpcm(dfraw2, centers=v_fpcmno8, memberships=u_fpcmno8, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(fpcm.resno8$u, 8)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(fpcm.resno8$t, 8)
+```
+
+```{r}
+cluster_assignments_fpcmno8 <- fpcm.resno8$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fpcmno8 <- fpcm.resno8$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno8 <- cbind(result_df_clusterno8, 
+                   Cluster_FPCM = cluster_assignments_fpcmno8,
+                   Membership_FPCM = apply(membership_degrees_fpcmno8, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno8
+```
+
+```{r}
+# Initialize the prototype matrix using K-means++
+v_mfpcmno8 <- inaparc::kmpp(dfraw2, k=8)$v
+
+# Initialize the memberships degrees matrix 
+u_mfpcmno8 <- inaparc::imembrand(nrow(dfraw2), k=8)$u
+
+# Run FPCM with the initial prototypes and memberships
+mfpcm.resno8 <- mfpcm(dfraw2, centers=v_mfpcmno8, memberships=u_mfpcmno8, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(mfpcm.resno8$u, 8)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(mfpcm.resno8$t, 8)
+```
+
+```{r}
+cluster_assignments_mfpcmno8 <- mfpcm.resno8$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_mfpcmno8 <- mfpcm.resno8$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_clusterno8 <- cbind(result_df_clusterno8, 
+                   Cluster_MFPCM = cluster_assignments_mfpcmno8,
+                   Membership_MFPCM = apply(membership_degrees_mfpcmno8, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_clusterno8
+```
+
+```{r}
+# Count the number of observations in each cluster
+barfcmno8 <- as.factor(fcm_resultno8$cluster)
+cluster_counts <- as.data.frame(table(barfcmno8))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FCM Clustering with 2 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ppcl_fcm_clusterno8 = ppclust2(fcm_resultno8,"fclust")
+idxsf_fcm_clusterno8 = SIL.F(ppcl_fcm_clusterno8$Xca, ppcl_fcm_clusterno8$U, alpha = 1)
+idxsf_fcm_clusterno8
+```
+```{r}
+ppcl_pcm_clusterno8 = ppclust2(pcm_resultno8,"fclust")
+idxsf_pcm_clusterno8 = SIL.F(ppcl_pcm_clusterno8$Xca, ppcl_pcm_clusterno8$U, alpha = 1)
+idxsf_pcm_clusterno8
+```
+```{r}
+ppcl_fpcm_clusterno8 = ppclust2(fpcm.resno8,"fclust")
+idxsf_fpcm_clusterno8 = SIL.F(ppcl_fpcm_clusterno8$Xca, ppcl_fpcm_clusterno8$U, alpha = 1)
+idxsf_fpcm_clusterno8
+```
+```{r}
+ppcl_mfpcm_clusterno8 = ppclust2(mfpcm.resno8,"fclust")
+idxsf_mfpcm_clusterno8 = SIL.F(ppcl_mfpcm_clusterno8$Xca, ppcl_mfpcm_clusterno8$U, alpha = 1)
+idxsf_mfpcm_clusterno8
+```
+```{r}
+#d<-dist(x)
+fcm_clustersno8 <- apply(fcm_resultno8$u, 1, which.max)  # Get the cluster with the highest membership
+d_fcmno8 <- dist(dfraw2)
+db_fcmno8 <- index.DB(dfraw2, fcm_clustersno8, d_fcmno8, centrotypes="centroids")
+db_fcmno8
+```
+```{r}
+pcm_clustersno8 <- apply(pcm_resultno8$t, 1, which.max)  # Get the cluster with the highest membership
+d_pcmno8 <- dist(dfraw2)
+db_pcmno8 <- index.DB(dfraw2, pcm_clustersno8, d_pcmno8, centrotypes="centroids")
+db_pcmno8
+```
+
+```{r}
+fpcm_clustersno8 <- apply(fpcm.resno8$u, 1, which.max)  # Get the cluster with the highest membership
+d_fpcmno8 <- dist(dfraw2)
+db_fpcmno8 <- index.DB(dfraw2, fpcm_clustersno8, d_fpcmno8, centrotypes="centroids")
+db_fpcmno8
+```
+
+```{r}
+mfpcm_clustersno8 <- apply(mfpcm.resno8$u, 1, which.max)  # Get the cluster with the highest membership
+d_mfpcmno8 <- dist(dfraw2)
+db_mfpcmno8 <- index.DB(dfraw2, mfpcm_clustersno8, d_mfpcmno8, centrotypes="centroids")
+db_mfpcmno8
+```
+
+
+```{r}
+summary(fcm_resultno8)
+```
+
+```{r}
+summary(pcm_resultno8)
+```
+
+```{r}
+summary(fpcm.resno8)
+```
+
+```{r}
+summary(mfpcm.resno8)
+```
+
+```{r}
+# After PCA
+```
+
+```{r}
+fcm_result8 <- fcm(dfrawfinalnum, centers = 8)
+pcm_result8 <- pcm(dfrawfinalnum, centers = 8)
+```
+
+```{r}
+cluster_assignments_pcm8 <- pcm_result8$cluster
+cluster_assignments_fcm8 <- fcm_result8$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_pcm8 <- pcm_result8$t
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fcm8 <- fcm_result8$u
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster8 <- cbind(dfrawfinalnum, 
+                   Cluster_FCM = cluster_assignments_fcm8,
+                   Cluster_PCM = cluster_assignments_pcm8,
+                   Membership_FCM = apply(membership_degrees_fcm8, 1, max),
+                   Membership_PCM = apply(membership_degrees_pcm8, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster8
+
+```
+
+
+```{r}
+
+# Initialize the prototype matrix using K-means++
+v_fpcm8 <- inaparc::kmpp(dfrawfinalnum, k=8)$v
+
+# Initialize the memberships degrees matrix 
+u_fpcm8 <- inaparc::imembrand(nrow(dfrawfinalnum), k=8)$u
+
+# Run FPCM with the initial prototypes and memberships
+fpcm.res8 <- fpcm(dfrawfinalnum, centers=v_fpcm8, memberships=u_fpcm8, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(fpcm.res8$u, 8)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(fpcm.res8$t, 8)
+```
+
+```{r}
+cluster_assignments_fpcm8 <- fpcm.res8$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fpcm8 <- fpcm.res8$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster8 <- cbind(result_df_cluster8, 
+                   Cluster_FPCM = cluster_assignments_fpcm8,
+                   Membership_FPCM = apply(membership_degrees_fpcm8, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster8
+```
+
+```{r}
+# Initialize the prototype matrix using K-means++
+v_mfpcm8 <- inaparc::kmpp(dfrawfinalnum, k=8)$v
+
+# Initialize the memberships degrees matrix 
+u_mfpcm8 <- inaparc::imembrand(nrow(dfrawfinalnum), k=8)$u
+
+# Run FPCM with the initial prototypes and memberships
+mfpcm.res8 <- mfpcm(dfrawfinalnum, centers=v_mfpcm8, memberships=u_mfpcm8, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(mfpcm.res8$u, 8)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(mfpcm.res8$t, 8)
+```
+
+```{r}
+cluster_assignments_mfpcm8 <- mfpcm.res8$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_mfpcm8 <- mfpcm.res8$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster8 <- cbind(result_df_cluster8, 
+                   Cluster_MFPCM = cluster_assignments_mfpcm8,
+                   Membership_MFPCM = apply(membership_degrees_mfpcm8, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster8
+```
+
+```{r}
+
+#write_xlsx(result_df_raw8, "D:/bckup hdd lama/Kuliah/PA/datasdgsjatim_cluster8.xlsx")
+
+```
+
+
+
+```{r}
+# Count the number of observations in each cluster
+barfcm8 <- as.factor(fcm_result8$cluster)
+cluster_counts <- as.data.frame(table(barfcm8))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FCM Clustering with 8 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+# Count the number of observations in each cluster
+barfpcm8 <- as.factor(fpcm.res8$cluster)
+cluster_counts <- as.data.frame(table(barfpcm8))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FPCM Clustering with 8 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+# Count the number of observations in each cluster
+barmfpcm8 <- as.factor(mfpcm.res8$cluster)
+cluster_counts <- as.data.frame(table(barmfpcm8))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "MFPCM Clustering with 8 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ppcl_fcm_cluster8 = ppclust2(fcm_result8,"fclust")
+idxsf_fcm_cluster8 = SIL.F(ppcl_fcm_cluster8$Xca, ppcl_fcm_cluster8$U, alpha = 1)
+idxsf_fcm_cluster8
+```
+```{r}
+ppcl_pcm_cluster8 = ppclust2(pcm_result8,"fclust")
+idxsf_pcm_cluster8 = SIL.F(ppcl_pcm_cluster8$Xca, ppcl_pcm_cluster8$U, alpha = 1)
+idxsf_pcm_cluster8
+```
+```{r}
+ppcl_fpcm_cluster8 = ppclust2(fpcm.res8,"fclust")
+idxsf_fpcm_cluster8 = SIL.F(ppcl_fpcm_cluster8$Xca, ppcl_fpcm_cluster8$U, alpha = 1)
+idxsf_fpcm_cluster8
+```
+```{r}
+ppcl_mfpcm_cluster8 = ppclust2(mfpcm.res8,"fclust")
+idxsf_mfpcm_cluster8 = SIL.F(ppcl_mfpcm_cluster8$Xca, ppcl_mfpcm_cluster8$U, alpha = 1)
+idxsf_mfpcm_cluster8
+```
+```{r}
+#d<-dist(x)
+fcm_clusters8 <- apply(fcm_result8$u, 1, which.max)  # Get the cluster with the highest membership
+d_fcm8 <- dist(dfrawfinalnum)
+db_fcm8 <- index.DB(dfrawfinalnum, fcm_clusters8, d_fcm8, centrotypes="centroids")
+db_fcm8
+```
+```{r}
+pcm_clusters8 <- apply(pcm_result8$t, 1, which.max)  # Get the cluster with the highest membership
+d_pcm8 <- dist(dfrawfinalnum)
+db_pcm8 <- index.DB(dfrawfinalnum, pcm_clusters8, d_pcm8, centrotypes="centroids")
+db_pcm8
+```
+
+```{r}
+fpcm_clusters8 <- apply(fpcm.res8$u, 1, which.max)  # Get the cluster with the highest membership
+d_fpcm8 <- dist(dfrawfinalnum)
+db_fpcm8 <- index.DB(dfrawfinalnum, fpcm_clusters8, d_fpcm8, centrotypes="centroids")
+db_fpcm8
+```
+
+```{r}
+mfpcm_clusters8 <- apply(mfpcm.res8$u, 1, which.max)  # Get the cluster with the highest membership
+d_mfpcm8 <- dist(dfrawfinalnum)
+db_mfpcm8 <- index.DB(dfrawfinalnum, mfpcm_clusters8, d_mfpcm8, centrotypes="centroids")
+db_mfpcm8
+```
+
+```{r}
+summary(fcm_result8)
+```
+
+```{r}
+summary(pcm_result8)
+```
+
+```{r}
+summary(fpcm.res8)
+```
+
+```{r}
+summary(mfpcm.res8)
+```
+
+
+
+```{r}
+# Cluster 9
+```
+
+```{r}
+fcm_result9 <- fcm(dfrawfinalnum, centers = 9)
+pcm_result9 <- pcm(dfrawfinalnum, centers = 9)
+```
+
+```{r}
+cluster_assignments_pcm9 <- pcm_result9$cluster
+cluster_assignments_fcm9 <- fcm_result9$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_pcm9 <- pcm_result9$t
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fcm9 <- fcm_result9$u
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster9 <- cbind(dfrawfinalnum, 
+                   Cluster_FCM = cluster_assignments_fcm9,
+                   Cluster_PCM = cluster_assignments_pcm9,
+                   Membership_FCM = apply(membership_degrees_fcm9, 1, max),
+                   Membership_PCM = apply(membership_degrees_pcm9, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster9
+
+```
+
+
+```{r}
+
+# Initialize the prototype matrix using K-means++
+v_fpcm9 <- inaparc::kmpp(dfrawfinalnum, k=9)$v
+
+# Initialize the memberships degrees matrix 
+u_fpcm9 <- inaparc::imembrand(nrow(dfrawfinalnum), k=9)$u
+
+# Run FPCM with the initial prototypes and memberships
+fpcm.res9 <- fpcm(dfrawfinalnum, centers=v_fpcm9, memberships=u_fpcm9, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(fpcm.res9$u, 9)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(fpcm.res9$t, 9)
+```
+
+```{r}
+cluster_assignments_fpcm9 <- fpcm.res9$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fpcm9 <- fpcm.res9$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster9 <- cbind(result_df_cluster9, 
+                   Cluster_FPCM = cluster_assignments_fpcm9,
+                   Membership_FPCM = apply(membership_degrees_fpcm9, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster9
+```
+
+```{r}
+# Initialize the prototype matrix using K-means++
+v_mfpcm9 <- inaparc::kmpp(dfrawfinalnum, k=9)$v
+
+# Initialize the memberships degrees matrix 
+u_mfpcm9 <- inaparc::imembrand(nrow(dfrawfinalnum), k=9)$u
+
+# Run FPCM with the initial prototypes and memberships
+mfpcm.res9 <- mfpcm(dfrawfinalnum, centers=v_mfpcm9, memberships=u_mfpcm9, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(mfpcm.res9$u, 9)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(mfpcm.res9$t, 9)
+```
+
+```{r}
+cluster_assignments_mfpcm9 <- mfpcm.res9$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_mfpcm9 <- mfpcm.res9$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster9 <- cbind(result_df_cluster9, 
+                   Cluster_MFPCM = cluster_assignments_mfpcm9,
+                   Membership_MFPCM = apply(membership_degrees_mfpcm9, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster9
+```
+
+```{r}
+
+#write_xlsx(result_df_raw9, "D:/bckup hdd lama/Kuliah/PA/datasdgsjatim_cluster9.xlsx")
+
+```
+
+
+
+```{r}
+# Count the number of observations in each cluster
+barfcm9 <- as.factor(fcm_result9$cluster)
+cluster_counts <- as.data.frame(table(barfcm9))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FCM Clustering with 9 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+# Count the number of observations in each cluster
+barfpcm9 <- as.factor(fpcm.res9$cluster)
+cluster_counts <- as.data.frame(table(barfpcm9))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FPCM Clustering with 9 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+# Count the number of observations in each cluster
+barmfpcm9 <- as.factor(mfpcm.res9$cluster)
+cluster_counts <- as.data.frame(table(barmfpcm9))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "MFPCM Clustering with 9 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ppcl_fcm_cluster9 = ppclust2(fcm_result9,"fclust")
+idxsf_fcm_cluster9 = SIL.F(ppcl_fcm_cluster9$Xca, ppcl_fcm_cluster9$U, alpha = 1)
+idxsf_fcm_cluster9
+```
+```{r}
+ppcl_pcm_cluster9 = ppclust2(pcm_result9,"fclust")
+idxsf_pcm_cluster9 = SIL.F(ppcl_pcm_cluster9$Xca, ppcl_pcm_cluster9$U, alpha = 1)
+idxsf_pcm_cluster9
+```
+```{r}
+ppcl_fpcm_cluster9 = ppclust2(fpcm.res9,"fclust")
+idxsf_fpcm_cluster9 = SIL.F(ppcl_fpcm_cluster9$Xca, ppcl_fpcm_cluster9$U, alpha = 1)
+idxsf_fpcm_cluster9
+```
+```{r}
+ppcl_mfpcm_cluster9 = ppclust2(mfpcm.res9,"fclust")
+idxsf_mfpcm_cluster9 = SIL.F(ppcl_mfpcm_cluster9$Xca, ppcl_mfpcm_cluster9$U, alpha = 1)
+idxsf_mfpcm_cluster9
+```
+```{r}
+#d<-dist(x)
+fcm_clusters9 <- apply(fcm_result9$u, 1, which.max)  # Get the cluster with the highest membership
+d_fcm9 <- dist(dfrawfinalnum)
+db_fcm9 <- index.DB(dfrawfinalnum, fcm_clusters9, d_fcm9, centrotypes="centroids")
+db_fcm9
+```
+```{r}
+pcm_clusters9 <- apply(pcm_result9$t, 1, which.max)  # Get the cluster with the highest membership
+d_pcm9 <- dist(dfrawfinalnum)
+db_pcm9 <- index.DB(dfrawfinalnum, pcm_clusters9, d_pcm9, centrotypes="centroids")
+db_pcm9
+```
+
+```{r}
+fpcm_clusters9 <- apply(fpcm.res9$u, 1, which.max)  # Get the cluster with the highest membership
+d_fpcm9 <- dist(dfrawfinalnum)
+db_fpcm9 <- index.DB(dfrawfinalnum, fpcm_clusters9, d_fpcm9, centrotypes="centroids")
+db_fpcm9
+```
+
+```{r}
+mfpcm_clusters9 <- apply(mfpcm.res9$u, 1, which.max)  # Get the cluster with the highest membership
+d_mfpcm9 <- dist(dfrawfinalnum)
+db_mfpcm9 <- index.DB(dfrawfinalnum, mfpcm_clusters9, d_mfpcm9, centrotypes="centroids")
+db_mfpcm9
+```
+
+```{r}
+summary(fcm_result9)
+```
+
+```{r}
+summary(pcm_result9)
+```
+
+```{r}
+summary(fpcm.res9)
+```
+
+```{r}
+summary(mfpcm.res9)
+```
+
+
+```{r}
+fcm_result10 <- fcm(dfrawfinalnum, centers = 10)
+pcm_result10 <- pcm(dfrawfinalnum, centers = 10)
+```
+
+```{r}
+cluster_assignments_pcm10 <- pcm_result10$cluster
+cluster_assignments_fcm10 <- fcm_result10$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_pcm10 <- pcm_result10$t
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fcm10 <- fcm_result10$u
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster10 <- cbind(dfrawfinalnum, 
+                   Cluster_FCM = cluster_assignments_fcm10,
+                   Cluster_PCM = cluster_assignments_pcm10,
+                   Membership_FCM = apply(membership_degrees_fcm10, 1, max),
+                   Membership_PCM = apply(membership_degrees_pcm10, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster10
+
+```
+
+
+```{r}
+
+# Initialize the prototype matrix using K-means++
+v_fpcm10 <- inaparc::kmpp(dfrawfinalnum, k=10)$v
+
+# Initialize the memberships degrees matrix 
+u_fpcm10 <- inaparc::imembrand(nrow(dfrawfinalnum), k=10)$u
+
+# Run FPCM with the initial prototypes and memberships
+fpcm.res10 <- fpcm(dfrawfinalnum, centers=v_fpcm10, memberships=u_fpcm10, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(fpcm.res10$u, 10)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(fpcm.res10$t, 10)
+```
+
+```{r}
+cluster_assignments_fpcm10 <- fpcm.res10$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_fpcm10 <- fpcm.res10$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster10 <- cbind(result_df_cluster10, 
+                   Cluster_FPCM = cluster_assignments_fpcm10,
+                   Membership_FPCM = apply(membership_degrees_fpcm10, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster10
+```
+
+```{r}
+# Initialize the prototype matrix using K-means++
+v_mfpcm10 <- inaparc::kmpp(dfrawfinalnum, k=10)$v
+
+# Initialize the memberships degrees matrix 
+u_mfpcm10 <- inaparc::imembrand(nrow(dfrawfinalnum), k=10)$u
+
+# Run FPCM with the initial prototypes and memberships
+mfpcm.res10 <- mfpcm(dfrawfinalnum, centers=v_mfpcm10, memberships=u_mfpcm10, m=2, eta=2)
+
+# Show the fuzzy membership degrees for the top 5 objects
+head(mfpcm.res10$u, 10)
+
+# Show the possibilistic membership degrees for the top 5 objects
+head(mfpcm.res10$t, 10)
+```
+
+```{r}
+cluster_assignments_mfpcm10 <- mfpcm.res10$cluster
+#cluster_assignments_fcm <- fcm_result$cluster
+
+# Extract the membership degrees (fuzzy membership)
+membership_degrees_mfpcm10 <- mfpcm.res10$t
+
+# Convert cluster assignments and membership degrees to a data frame
+result_df_cluster10 <- cbind(result_df_cluster10, 
+                   Cluster_MFPCM = cluster_assignments_mfpcm10,
+                   Membership_MFPCM = apply(membership_degrees_mfpcm10, 1, max)
+                   )
+
+# View the first few rows of the result
+result_df_cluster10
+```
+
+```{r}
+
+#write_xlsx(result_df_raw10, "D:/bckup hdd lama/Kuliah/PA/datasdgsjatim_cluster10.xlsx")
+
+```
+
+
+
+```{r}
+# Count the number of observations in each cluster
+barfcm10 <- as.factor(fcm_result10$cluster)
+cluster_counts <- as.data.frame(table(barfcm10))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FCM Clustering with 10 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+# Count the number of observations in each cluster
+barfpcm10 <- as.factor(fpcm.res10$cluster)
+cluster_counts <- as.data.frame(table(barfpcm10))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "FPCM Clustering with 10 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+# Count the number of observations in each cluster
+barmfpcm10 <- as.factor(mfpcm.res10$cluster)
+cluster_counts <- as.data.frame(table(barmfpcm10))
+
+# Rename the columns for clarity
+colnames(cluster_counts) <- c("Cluster", "Count")
+
+# Create the bar chart
+ggplot(cluster_counts, aes(x = Cluster, y = Count, fill = Cluster)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Count), vjust = -0.5) +
+  labs(title = "MFPCM Clustering with 10 Clusters",
+       x = "Cluster",
+       y = "Count") +
+  theme_minimal()
+```
+
+```{r}
+ppcl_fcm_cluster10 = ppclust2(fcm_result10,"fclust")
+idxsf_fcm_cluster10 = SIL.F(ppcl_fcm_cluster10$Xca, ppcl_fcm_cluster10$U, alpha = 1)
+idxsf_fcm_cluster10
+```
+```{r}
+ppcl_pcm_cluster10 = ppclust2(pcm_result10,"fclust")
+idxsf_pcm_cluster10 = SIL.F(ppcl_pcm_cluster10$Xca, ppcl_pcm_cluster10$U, alpha = 1)
+idxsf_pcm_cluster10
+```
+```{r}
+ppcl_fpcm_cluster10 = ppclust2(fpcm.res10,"fclust")
+idxsf_fpcm_cluster10 = SIL.F(ppcl_fpcm_cluster10$Xca, ppcl_fpcm_cluster10$U, alpha = 1)
+idxsf_fpcm_cluster10
+```
+```{r}
+ppcl_mfpcm_cluster10 = ppclust2(mfpcm.res10,"fclust")
+idxsf_mfpcm_cluster10 = SIL.F(ppcl_mfpcm_cluster10$Xca, ppcl_mfpcm_cluster10$U, alpha = 1)
+idxsf_mfpcm_cluster10
+```
+```{r}
+#d<-dist(x)
+fcm_clusters10 <- apply(fcm_result10$u, 1, which.max)  # Get the cluster with the highest membership
+d_fcm10 <- dist(dfrawfinalnum)
+db_fcm10 <- index.DB(dfrawfinalnum, fcm_clusters10, d_fcm10, centrotypes="centroids")
+db_fcm10
+```
+```{r}
+pcm_clusters10 <- apply(pcm_result10$t, 1, which.max)  # Get the cluster with the highest membership
+d_pcm10 <- dist(dfrawfinalnum)
+db_pcm10 <- index.DB(dfrawfinalnum, pcm_clusters10, d_pcm10, centrotypes="centroids")
+db_pcm10
+```
+
+```{r}
+fpcm_clusters10 <- apply(fpcm.res10$u, 1, which.max)  # Get the cluster with the highest membership
+d_fpcm10 <- dist(dfrawfinalnum)
+db_fpcm10 <- index.DB(dfrawfinalnum, fpcm_clusters10, d_fpcm10, centrotypes="centroids")
+db_fpcm10
+```
+
+```{r}
+mfpcm_clusters10 <- apply(mfpcm.res10$u, 1, which.max)  # Get the cluster with the highest membership
+d_mfpcm10 <- dist(dfrawfinalnum)
+db_mfpcm10 <- index.DB(dfrawfinalnum, mfpcm_clusters10, d_mfpcm10, centrotypes="centroids")
+db_mfpcm10
+```
+
+```{r}
+summary(fcm_result10)
+```
+
+```{r}
+summary(pcm_result10)
+```
+
+```{r}
+summary(fpcm.res10)
+```
+
+```{r}
+summary(mfpcm.res10)
+```
+
+
+
+
+```{r}
+plotcluster(fcm_result8)
+fcm_result8_viz=ppclust2(fcm_result8,"kmeans")
+fviz_cluster(fcm_result8_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(pcm_result8)
+pcm_result8_viz=ppclust2(pcm_result8,"kmeans")
+fviz_cluster(pcm_result8_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(fpcm.res8)
+fpcm_result8_viz=ppclust2(fpcm.res8,"kmeans")
+fviz_cluster(fpcm_result8_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```
+
+```{r}
+plotcluster(mfpcm.res8)
+mfpcm_result8_viz=ppclust2(mfpcm.res8,"kmeans")
+fviz_cluster(mfpcm_result8_viz, data=dfrawfinalnum, palette="jco", repel=TRUE)
+```

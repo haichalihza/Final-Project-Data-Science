@@ -1,0 +1,81 @@
+---
+title: "mahalanobis"
+output: html_document
+date: "2024-05-14"
+---
+```{r}
+#install.packages('readxl')
+#library(readxl)
+dfnew
+```
+
+```{r}
+df <- read_excel('D:/bckup hdd lama/Kuliah/Semester 6/PA/NilaiD4SDT.xlsx')
+dfnew <- subset(df, select = -c(NAMA))
+#sapply(df, class)
+df
+```
+
+```{r}
+is.totinc.outlier <- abs(scale(df$Total.income.Total.expense))
+is.totex.outlier <- abs(scale(df$Total.expense.Assets))
+
+pch               <- (is.totinc.outlier | is.totex.outlier) * 6819
+```
+
+
+```{r}
+#is.df.outlier
+png("myplot.png", width = 50, height = 30, units = "in", res = 300)
+plot(df, pch=pch)  # your plot code here
+dev.off()
+```
+
+```{r}
+pch
+#mahalanobis(df, colMeans(df), cov(df))
+
+```
+
+```{r}
+
+n.outliers   <- 2 # Mark as outliers the 2 most extreme points
+m.dist.order <- order(mahalanobis(df, colMeans(df), cov(df)), decreasing=TRUE)
+is.outlier   <- rep(FALSE, nrow(df))
+is.outlier[m.dist.order[1:n.outliers]] <- TRUE
+pch <- is.outlier * 7043
+
+```
+
+```{r}
+hw <- data.frame(Height.cm=c(164, 167, 168, 169, 169, 170, 170, 170, 171, 172, 172, 173, 173, 175, 176, 178),
+                 Weight.kg=c( 54,  57,  58,  60,  61,  60,  61,  62,  62,  64,  62,  62,  64,  56,  66,  70)) 
+hw
+```
+
+```{r}
+#pch
+```
+
+
+```{r}
+#is.height.outlier <- abs(scale(dfnew)) > 2
+
+is.height.outlier <- abs(scale(dfnew$`Basis Data`)) > 2
+is.weight.outlier <- abs(scale(dfnew$`Praktikum Basis Data`)) > 2
+pch               <- (is.height.outlier | is.weight.outlier) * 48
+par(mar=c(1,1,1,1))
+#plot(dfnew, pch=pch)
+
+```
+
+```{r}
+
+m.dist.order <- order(mahalanobis(dfnew, colMeans(dfnew), cov(dfnew)), decreasing=TRUE)
+
+is.outlier <- rep(FALSE, nrow(dfnew))
+
+is.outlier[m.dist.order[1:2]] <- TRUE # Mark as outliers the 2 most extreme points
+
+col <- is.outlier + 1
+```
